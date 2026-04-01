@@ -1,0 +1,120 @@
+# openenv.yaml
+# ─────────────────────────────────────────────────────────────────────────────
+# Environment manifest for Cascade Containment.
+# Read by the OpenEnv auto-validator before any code is executed.
+# Field names and structure must match the OpenEnv spec exactly.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: cascade-containment
+version: "1.0.0"
+description: >
+  An RL benchmark for epidemic containment policy under uncertainty.
+  A city health authority must allocate limited resources across districts
+  to contain a spreading outbreak — with delayed data, resource scarcity,
+  and cascading hospital stress. Generalises to wildfire deployment,
+  cyberattack isolation, and misinformation containment.
+
+author: SST-Team
+license: MIT
+
+# ── Environment Entry Point ───────────────────────────────────────────────────
+
+server:
+  module:   server.app
+  app:      app
+  port:     7860
+  dockerfile: Dockerfile
+
+# ── Action Space ──────────────────────────────────────────────────────────────
+
+action:
+  type: object
+  class: ContainmentAction
+  fields:
+    action_type:
+      type: string
+      description: "One of: 'test', 'restrict', 'allocate'"
+      enum: [test, restrict, allocate]
+    district_id:
+      type: integer
+      description: "Target district index (0-indexed)"
+      minimum: 0
+
+# ── Observation Space ─────────────────────────────────────────────────────────
+
+observation:
+  type: object
+  class: CityObservation
+  fields:
+    districts:
+      type: array
+      description: "Per-district state visible to agent"
+      items:
+        type: object
+        fields:
+          district_id:
+            type: integer
+          reported_infection_rate:
+            type: number
+            minimum: 0.0
+            maximum: 1.0
+          growth_rate_hint:
+            type: number
+            minimum: 0.0
+            maximum: 1.0
+          hospital_capacity_remaining:
+            type: number
+            minimum: 0.0
+            maximum: 1.0
+          population_density:
+            type: number
+            minimum: 0.0
+            maximum: 1.0
+          tested_recently:
+            type: boolean
+          restriction_active:
+            type: boolean
+    available_resources:
+      type: integer
+      description: "Resource units remaining this turn"
+    current_step:
+      type: integer
+    max_steps:
+      type: integer
+    done:
+      type: boolean
+    reward:
+      type: number
+      nullable: true
+    message:
+      type: string
+      nullable: true
+
+# ── Tasks ─────────────────────────────────────────────────────────────────────
+
+tasks:
+  - name: easy
+    description: "2 districts, 1 outbreak, real-time data, generous resources"
+    max_steps: 10
+    num_districts: 2
+
+  - name: medium
+    description: "4 districts, 2 simultaneous outbreaks, limited resources"
+    max_steps: 15
+    num_districts: 4
+
+  - name: hard
+    description: "6 districts, 3-day data lag, scarce resources"
+    max_steps: 20
+    num_districts: 6
+
+# ── Generalisation Note ───────────────────────────────────────────────────────
+
+tags:
+  - reinforcement-learning
+  - resource-allocation
+  - sequential-decision-making
+  - epidemic-containment
+  - cascade-dynamics
+  - partial-observability
+  - openenv
