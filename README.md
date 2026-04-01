@@ -142,7 +142,7 @@ from client import CascadeContainmentEnv
 from models import ContainmentAction
 
 with CascadeContainmentEnv(
-    base_url="https://RohitChandramouli6618-cascade-containment.hf.space"
+    base_url="https://therubberduckdebuggers-cascade-containment.hf.space"
 ).sync() as env:
     # Run easy task
     obs = env.reset(task_name="easy")
@@ -163,7 +163,7 @@ with CascadeContainmentEnv(
 export API_BASE_URL="https://router.huggingface.co/v1"
 export MODEL_NAME="meta-llama/Llama-3.1-8B-Instruct"
 export HF_TOKEN="your_hf_token"
-export ENV_BASE_URL="https://RohitChandramouli6618-cascade-containment.hf.space"
+export ENV_BASE_URL="https://therubberduckdebuggers-cascade-containment.hf.space"
 
 # Run inference
 python inference.py
