@@ -20,7 +20,9 @@ from core.trajectory import EpisodicMemory
 from core.reward import normalise_score
 from core.policy_update import compute_advantage, update_memory
 
-N_ROLLOUTS = 3
+import requests as http_requests
+
+N_ROLLOUTS = 4
 
 
 # ── Prompt Builder With Memory ────────────────────────────────────────────────
@@ -46,11 +48,11 @@ def build_prompt_with_memory(obs: CityObservation, memory: EpisodicMemory) -> st
 
 def run_rollout(
     env:       Any,
-    task_name: str,         
+    task_name: str,
     client:    OpenAI,
     memory:    EpisodicMemory,
     verbose:   bool = True,
-    ) -> Tuple[float, int, List[dict]]: 
+) -> Tuple[float, int, List[dict]]:
     """Run one complete episode using memory-augmented prompts."""
     result = env.reset(task_name=task_name)
     obs          = result.observation
@@ -64,7 +66,15 @@ def run_rollout(
         response = call_llm(prompt, client)
         action   = parse_action(response, len(obs.districts))
 
-        result       = env.step(action)
+        try:
+            result   = env.step(action)
+        except Exception as e:
+            if "close frame" in str(e).lower() or "websocket" in str(e).lower():
+                if verbose:
+                    print(f"      ⚠ WebSocket dropped at step {step+1}, ending rollout early")
+                break
+            raise
+
         next_obs     = result.observation
         reward       = result.reward or 0.0
         done         = result.done
@@ -97,6 +107,7 @@ def run_task_grpo(
     env:       Any,
     task_name: str,
     client:    OpenAI,
+    base_url:  str,
     verbose:   bool = True,
 ) -> float:
     """GRPO-style simulated learning loop for one task."""
@@ -113,11 +124,27 @@ def run_task_grpo(
             print(f"\n    Rollout {i+1}/{N_ROLLOUTS} [{label}]")
 
         total_reward, steps, trajectory = run_rollout(env, task_name, client, memory, verbose)
-        score                           = normalise_score(total_reward, steps)
-        rollouts.append((total_reward, steps, score))
 
-        if verbose:
-            print(f"    → Reward: {total_reward:+.4f} | Score: {score:.4f}")
+        # Use real grader score from server
+        num_districts = {"easy": 2, "medium": 4, "hard": 6}.get(task_name, 2)
+        try:
+            grade_resp = http_requests.get(
+                base_url.rstrip('/') + '/grade', timeout=10
+            )
+            if grade_resp.status_code == 200:
+                data  = grade_resp.json()
+                score = data["final_score"]
+                if verbose:
+                    print(
+                        f"    → Grader: containment={data['containment_score']:.3f} "
+                        f"hospital={data['hospital_score']:.3f} "
+                        f"efficiency={data['efficiency_score']:.3f} "
+                        f"speed={data['speed_score']:.3f}"
+                    )
+            else:
+                score = normalise_score(total_reward, steps, num_districts)
+        except Exception:
+            score = normalise_score(total_reward, steps, num_districts)
 
         # GRPO advantage computation
         completed_rewards = [r[0] for r in rollouts]
@@ -164,7 +191,7 @@ def run_evaluation(
     with CascadeContainmentEnv(base_url=base_url).sync() as env:
         for task_name in ["easy", "medium", "hard"]:
             try:
-                score             = run_task_grpo(env, task_name, client, verbose)
+                score = run_task_grpo(env, task_name, client, base_url, verbose)
                 scores[task_name] = score
                 if verbose:
                     print(f"\n  ✓ {task_name.upper()} final score: {score:.4f}")

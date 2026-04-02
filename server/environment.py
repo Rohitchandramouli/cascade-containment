@@ -52,6 +52,8 @@ from server.utils import (
 )
 from server.tasks.registry import get_task
 
+from server.grader import grade_trajectory
+_last_grade: dict = {}
 
 class EpidemicContainmentEnv(Environment):
     """
@@ -158,6 +160,21 @@ class EpidemicContainmentEnv(Environment):
 
         # ── 10. Check terminal conditions ─────────────────────────────────────
         done, terminal_message = self._check_terminal()
+
+        if done and self._trajectory:
+            import server.environment as _self_module
+            result = grade_trajectory(self._trajectory, self._task_name)
+            _self_module._last_grade = {
+                "final_score":         result.final_score,
+                "containment_score":   result.containment_score,
+                "hospital_score":      result.hospital_score,
+                "efficiency_score":    result.efficiency_score,
+                "speed_score":         result.speed_score,
+                "hospital_breached":   result.hospital_breached,
+                "districts_contained": result.districts_contained,
+                "total_steps":         result.total_steps,
+                "task_name":           self._task_name,
+            }
 
         # ── 11. Build and return observation ──────────────────────────────────
         final_message = terminal_message if terminal_message else message

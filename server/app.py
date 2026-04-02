@@ -10,15 +10,29 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from openenv.core.env_server import create_app
+from fastapi.responses import JSONResponse
 from server.environment import EpidemicContainmentEnv
 from models import ContainmentAction, CityObservation
-
+import server.environment as env_module
 
 app = create_app(
     EpidemicContainmentEnv,
     ContainmentAction,
     CityObservation,
 )
+
+@app.get("/grade")
+async def grade_last_episode():
+    """
+    Returns the deterministic grader score for the most recently completed episode.
+    Computed automatically when an episode ends via the WebSocket session.
+    """
+    if not env_module._last_grade:
+        return JSONResponse(
+            {"error": "No completed episode yet — run a full episode first"},
+            status_code=400
+        )
+    return JSONResponse(env_module._last_grade)
 
 from fastapi.responses import HTMLResponse
 
