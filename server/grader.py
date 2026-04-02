@@ -94,10 +94,12 @@ def grade_trajectory(
     total_district_days   = total_steps * num_districts
     safe_district_days    = 0
 
-    for step in trajectory:
+    for step in trajectory[2:]:  # skip first 2 steps
         for district in step.city_state.districts:
             if district.true_infection_rate <= INFECTION_THRESHOLD:
                 safe_district_days += 1
+
+    total_district_days = max(len(trajectory) - 2, 1) * num_districts
 
     containment_score = safe_district_days / total_district_days
 
@@ -115,7 +117,7 @@ def grade_trajectory(
             total_capacity_preserved += district.hospital_capacity_remaining
 
     avg_capacity     = total_capacity_preserved / total_district_days
-    hospital_score   = avg_capacity * (0.3 if hospital_breached else 1.0)
+    hospital_score   = avg_capacity * (0.6 if hospital_breached else 1.0)
     hospital_score   = round(min(1.0, max(0.0, hospital_score)), 4)
 
     # ── Component 3: Efficiency Score ────────────────────────────────────────
@@ -143,7 +145,7 @@ def grade_trajectory(
     # If contained in half the steps, speed_score = 0.5. Etc.
 
     last_step = trajectory[-1]
-    if last_step.done and not hospital_breached:
+    if last_step.done and total_steps < max_steps:
         speed_score = round(1.0 - (total_steps / max_steps), 4)
         speed_score = max(0.0, speed_score)
     else:
