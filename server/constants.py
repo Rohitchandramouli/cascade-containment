@@ -26,7 +26,7 @@ TASK_CONFIG = {
     },
     "hard": {
         "num_districts":    6,
-        "max_steps":        20,
+        "max_steps":        15,
         "resource_pool":    7,      # Scarce resources + delayed data
         "data_lag_days":    3,      # Agent sees infection rates from 3 days ago
     },

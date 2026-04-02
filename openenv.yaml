@@ -105,7 +105,7 @@ tasks:
 
   - name: hard
     description: "6 districts, 3-day data lag, scarce resources"
-    max_steps: 20
+    max_steps: 15
     num_districts: 6
 
 # ── Generalisation Note ───────────────────────────────────────────────────────

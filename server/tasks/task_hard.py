@@ -21,7 +21,7 @@ class HardTask(BaseTask):
 
     name          = "hard"
     num_districts = TASK_CONFIG["hard"]["num_districts"]    # 6
-    max_steps     = TASK_CONFIG["hard"]["max_steps"]        # 20
+    max_steps     = TASK_CONFIG["hard"]["max_steps"]        # 15
     resource_pool = TASK_CONFIG["hard"]["resource_pool"]    # 7
     data_lag_days = TASK_CONFIG["hard"]["data_lag_days"]    # 3
 
