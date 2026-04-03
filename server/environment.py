@@ -176,7 +176,7 @@ class EpidemicContainmentEnv(Environment):
                 "total_steps":         result.total_steps,
                 "task_name":           self._task_name,
             }
-
+            self._trajectory[-1].done = True
         # ── 11. Build and return observation ──────────────────────────────────
         final_message = terminal_message if terminal_message else message
 
