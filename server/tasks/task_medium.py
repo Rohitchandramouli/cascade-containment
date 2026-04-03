@@ -28,7 +28,7 @@ class MediumTask(BaseTask):
         # Districts 0 and 2 are seeded with outbreaks (non-adjacent).
         # Districts 1 and 3 are clean but will receive spillover.
         # Agent must choose which outbreak to tackle first.
-        seed_infections = [0.30, 0.05, 0.28, 0.05]
+        seed_infections = [0.12, 0.03, 0.10, 0.03]
 
         return CityState(
             day                 = 0,

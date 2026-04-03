@@ -33,6 +33,7 @@ from server.constants import (
     LOW_THRESHOLD,
     ALLOCATE_REDUCTION,
     RESTRICT_REDUCTION,
+    TREATMENT_REDUCTION,
     RESOURCE_REPLENISH,
     REWARD_INFECTION_PENALTY,
     REWARD_HOSPITAL_BREACH,
@@ -237,8 +238,8 @@ class EpidemicContainmentEnv(Environment):
             district.days_since_tested += 1
 
         elif action.action_type == "allocate":
-            # Deploy one resource unit — reduces spread this step via compute_spread
             district.deployed_resources    += 1
+            district.true_infection_rate    = max(0.0, district.true_infection_rate - TREATMENT_REDUCTION)
             self._city.available_resources -= 1
             district.days_since_tested     += 1
 

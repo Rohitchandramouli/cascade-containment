@@ -29,7 +29,7 @@ class HardTask(BaseTask):
         # All districts start with small infections that grow at different rates.
         # The 3-day lag means the agent won't see today's true rates until day 3.
         # Districts with high true_spread_rate will accelerate invisibly.
-        seed_infections = [0.10, 0.08, 0.12, 0.07, 0.15, 0.09]
+        seed_infections = [0.07, 0.05, 0.08, 0.04, 0.10, 0.06]
 
         # Pre-populate infection_history with 3 days of identical
         # starting values so the lag mechanic works from step 1.

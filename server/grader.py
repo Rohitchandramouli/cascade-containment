@@ -116,7 +116,8 @@ def grade_trajectory(
                 hospital_breached = True
             total_capacity_preserved += district.hospital_capacity_remaining
 
-    avg_capacity     = total_capacity_preserved / total_district_days
+    hospital_district_days = total_steps * num_districts   # all steps, not grace-period-adjusted
+    avg_capacity = total_capacity_preserved / hospital_district_days
     hospital_score   = avg_capacity * (0.6 if hospital_breached else 1.0)
     hospital_score   = round(min(1.0, max(0.0, hospital_score)), 4)
 

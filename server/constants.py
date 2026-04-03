@@ -43,13 +43,13 @@ HOSPITAL_BREACH_POINT = 0.00    # At or below this → hospital has collapsed
 
 # ── Spread Mechanics ──────────────────────────────────────────────────────────
 
-SPREAD_RATE_MIN       = 0.05    # Slowest possible true spread rate per day
-SPREAD_RATE_MAX       = 0.20    # Fastest possible true spread rate per day
+SPREAD_RATE_MIN       = 0.04    # Slowest possible true spread rate per day
+SPREAD_RATE_MAX       = 0.15    # Fastest possible true spread rate per day
 GROWTH_HINT_NOISE     = 0.03    # Random noise added to growth_rate_hint (± value)
-
+TREATMENT_REDUCTION   = 0.10    # Allocating also reduces existing infection
 ALLOCATE_REDUCTION    = 0.10    # How much one 'allocate' reduces spread this step
 RESTRICT_REDUCTION    = 0.05    # How much one 'restrict' reduces spread per step
-SPILLOVER_RATE        = 0.02    # Fraction of infection that spreads to adjacent districts per day
+SPILLOVER_RATE        = 0.01    # Fraction of infection that spreads to adjacent districts per day
 
 RESOURCE_REPLENISH    = 3       # Resource units restored at the start of each new day
 
