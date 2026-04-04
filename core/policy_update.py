@@ -32,7 +32,7 @@ def should_reinforce(advantage: float) -> bool:
     Reinforce if advantage >= 0 (at or above mean).
     Suppress if below mean.
     """
-    return advantage >= 0
+    return advantage > -0.5  # allow small negative margin to encourage exploration
 
 
 def update_memory(

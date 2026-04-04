@@ -125,7 +125,7 @@ def run_task_grpo(
 
         total_reward, steps, trajectory = run_rollout(env, task_name, client, memory, verbose)
 
-        # Use real grader score from server
+        # Get proper grader score from server
         num_districts = {"easy": 2, "medium": 4, "hard": 6}.get(task_name, 2)
         try:
             grade_resp = http_requests.get(
@@ -146,20 +146,26 @@ def run_task_grpo(
         except Exception:
             score = normalise_score(total_reward, steps, num_districts)
 
-        # GRPO advantage computation
+        # Append BEFORE advantage computation
+        rollouts.append((total_reward, steps, score))
+
+        if verbose:
+            print(f"    → Reward: {total_reward:+.4f} | Score: {score:.4f}")
+
+        # ── GRPO advantage computation and memory update ──────────────────────
         completed_rewards = [r[0] for r in rollouts]
         advantage         = compute_advantage(total_reward, completed_rewards[:-1])
         stored            = update_memory(memory, trajectory, advantage)
 
         if verbose:
             mean = sum(completed_rewards[:-1]) / max(len(completed_rewards) - 1, 1) \
-                   if len(completed_rewards) > 1 else total_reward
+                if len(completed_rewards) > 1 else total_reward
             print(f"    → Advantage: {advantage:+.4f} | "
-                  + (f"↑ Stored {stored} steps" if stored > 0 else "↓ Suppressed"))
+                + (f"↑ Stored {stored} steps" if stored > 0 else "↓ Suppressed"))
 
     all_rewards = [r[0] for r in rollouts]
     mean_reward = sum(all_rewards) / len(all_rewards)
-    best_score  = max(rollouts, key=lambda x: x[0])[2]
+    best_score = max(rollouts, key=lambda x: x[2])[2]
 
     if verbose:
         print(f"\n  Rewards:    {[round(r, 4) for r in all_rewards]}")

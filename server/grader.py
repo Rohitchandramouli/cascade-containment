@@ -172,8 +172,8 @@ def grade_trajectory(
     #   speed       = tiebreaker
 
     final_score = (
-        containment_score  * 0.45 +
-        hospital_score     * 0.30 +
+        containment_score  * 0.30 +
+        hospital_score     * 0.45 +
         efficiency_score   * 0.15 +
         speed_score        * 0.10
     )

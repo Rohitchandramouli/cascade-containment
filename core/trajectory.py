@@ -29,7 +29,7 @@ class EpisodicMemory:
 
     def store(self, obs: CityObservation, action: ContainmentAction, reward: float):
         """Store a step only if it earned positive reward."""
-        if reward <= 0:
+        if reward < -0.3:
             return
 
         self.memories.append({
