@@ -46,7 +46,7 @@ SPREAD_RATE_MIN       = 0.05    # Slowest possible spread rate per day
 SPREAD_RATE_MAX       = 0.13    # Fastest possible spread rate per day
 GROWTH_HINT_NOISE     = 0.03    # Noise on growth_rate_hint (± value)
 
-TREATMENT_REDUCTION   = 0.08    # Allocating reduces existing infection this step
+TREATMENT_REDUCTION   = 0.10    # Allocating reduces existing infection this step
 ALLOCATE_REDUCTION    = 0.10    # Allocating reduces future spread rate this step
 RESTRICT_REDUCTION    = 0.05    # Restricting reduces spread per step
 SPILLOVER_RATE        = 0.01    # Infection fraction that spills to adjacent districts

@@ -69,8 +69,8 @@ def build_prompt(obs: CityObservation) -> str:
             "",
             "DECISION RULES (follow in order):",
             "1. If ANY hospital is below 0.3 capacity: 'allocate' on that district IMMEDIATELY.",
-            "2. If resources > 0 and any district is CRITICAL (above 0.4): 'allocate' on the highest.",
-            "3. If resources > 0 and any district is WARNING (0.2-0.4): 'allocate' on the highest.",
+            "2. If resources > 0: ALWAYS 'allocate' on the district with the SINGLE HIGHEST infection rate.",
+            "3. Do NOT spread resources across multiple districts in the same turn — focus all pressure on the worst district.",
             "4. If resources = 0: 'restrict' on the highest infected district.",
             "5. NEVER use 'test' — data is already accurate.",
             "6. NEVER restrict a SAFE district (below 0.2) — you will be penalised.",
@@ -86,8 +86,9 @@ def build_prompt(obs: CityObservation) -> str:
             "DECISION RULES (follow in order):",
             "1. If ANY hospital is below 0.3 capacity: 'allocate' on that district IMMEDIATELY.",
             "2. If resources > 0: 'allocate' on the district with HIGHEST growth_hint.",
-            "3. If resources = 0: 'restrict' on the district with highest growth_hint.",
-            "4. NEVER use 'test' — spending resources on data wastes your limited budget.",
+            "3. Sustain pressure — keep allocating to the same district until growth_hint drops below 0.08.",
+            "4. If resources = 0: 'restrict' on highest growth_hint district.",
+            "5. NEVER use 'test'.",
         ]
 
     lines += [

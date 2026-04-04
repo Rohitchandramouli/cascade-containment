@@ -1,15 +1,8 @@
 # server/tasks/task_hard.py
-# ─────────────────────────────────────────────────────────────────────────────
-# Hard task: 6 districts, 3-day data lag, scarce resources.
-# All districts start with small but growing infections.
-# Agent must learn to read growth_rate_hint signals and act proactively
-# on districts that look manageable today but will be critical in 3 days.
-# ─────────────────────────────────────────────────────────────────────────────
-
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))    # reaches server/
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..')) # reaches project root
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
 from models import CityState
 from server.utils import generate_districts
@@ -20,24 +13,25 @@ from server.constants import TASK_CONFIG
 class HardTask(BaseTask):
 
     name          = "hard"
-    num_districts = TASK_CONFIG["hard"]["num_districts"]    # 6
-    max_steps     = TASK_CONFIG["hard"]["max_steps"]        # 15
-    resource_pool = TASK_CONFIG["hard"]["resource_pool"]    # 7
-    data_lag_days = TASK_CONFIG["hard"]["data_lag_days"]    # 3
+    num_districts = TASK_CONFIG["hard"]["num_districts"]
+    max_steps     = TASK_CONFIG["hard"]["max_steps"]
+    resource_pool = TASK_CONFIG["hard"]["resource_pool"]
+    data_lag_days = TASK_CONFIG["hard"]["data_lag_days"]
 
     def build_initial_state(self) -> CityState:
-        # All districts start with small infections that grow at different rates.
-        # The 3-day lag means the agent won't see today's true rates until day 3.
-        # Districts with high true_spread_rate will accelerate invisibly.
-        seed_infections = [0.12, 0.08, 0.14, 0.06, 0.16, 0.09]
+        # All districts start with small but growing infections.
+        # The 3-day lag means agent sees these seed values while true
+        # infection is already 3 days ahead — districts D0, D2, D4 will
+        # be CRITICAL before the agent sees updated data.
+        # 7 resources for 6 districts with delayed information is
+        # the hardest possible triage scenario.
+        seed_infections = [0.10, 0.06, 0.12, 0.05, 0.13, 0.07]
 
-        # Pre-populate infection_history with 3 days of identical
-        # starting values so the lag mechanic works from step 1.
-        initial_rates   = seed_infections[:]
+        initial_rates     = seed_infections[:]
         infection_history = [
-            initial_rates[:],   # day -3 (what agent sees on step 1)
-            initial_rates[:],   # day -2
-            initial_rates[:],   # day -1
+            initial_rates[:],  # day -3 (what agent sees on step 1)
+            initial_rates[:],  # day -2
+            initial_rates[:],  # day -1
         ]
 
         return CityState(
@@ -47,8 +41,8 @@ class HardTask(BaseTask):
             data_lag_days       = self.data_lag_days,
             max_steps           = self.max_steps,
             districts           = generate_districts(
-                                      num_districts    = self.num_districts,
-                                      seed_infections  = seed_infections,
+                                      num_districts   = self.num_districts,
+                                      seed_infections = seed_infections,
                                   ),
             infection_history   = infection_history,
         )

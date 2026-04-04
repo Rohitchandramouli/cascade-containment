@@ -1,14 +1,8 @@
 # server/tasks/task_medium.py
-# ─────────────────────────────────────────────────────────────────────────────
-# Medium task: 4 districts, 2 simultaneous outbreaks, tighter resource pool.
-# Agent must prioritise between competing threats — it cannot fully
-# address both outbreaks simultaneously and must learn to triage.
-# ─────────────────────────────────────────────────────────────────────────────
-
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))    # reaches server/
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..')) # reaches project root
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
 from models import CityState
 from server.utils import generate_districts
@@ -19,16 +13,17 @@ from server.constants import TASK_CONFIG
 class MediumTask(BaseTask):
 
     name          = "medium"
-    num_districts = TASK_CONFIG["medium"]["num_districts"]  # 4
-    max_steps     = TASK_CONFIG["medium"]["max_steps"]      # 15
-    resource_pool = TASK_CONFIG["medium"]["resource_pool"]  # 8
-    data_lag_days = TASK_CONFIG["medium"]["data_lag_days"]  # 0
+    num_districts = TASK_CONFIG["medium"]["num_districts"]
+    max_steps     = TASK_CONFIG["medium"]["max_steps"]
+    resource_pool = TASK_CONFIG["medium"]["resource_pool"]
+    data_lag_days = TASK_CONFIG["medium"]["data_lag_days"]
 
     def build_initial_state(self) -> CityState:
-        # Districts 0 and 2 are seeded with outbreaks (non-adjacent).
-        # Districts 1 and 3 are clean but will receive spillover.
-        # Agent must choose which outbreak to tackle first.
-        seed_infections = [0.25, 0.06, 0.22, 0.06]
+        # D0 and D2 seeded with outbreaks (non-adjacent).
+        # D1 and D3 start clean but will grow into critical within 3-4 steps.
+        # 8 total resources for 4 districts creates genuine triage pressure —
+        # agent cannot save all districts and must choose strategically.
+        seed_infections = [0.18, 0.03, 0.15, 0.03]
 
         return CityState(
             day                 = 0,
@@ -37,8 +32,8 @@ class MediumTask(BaseTask):
             data_lag_days       = self.data_lag_days,
             max_steps           = self.max_steps,
             districts           = generate_districts(
-                                      num_districts    = self.num_districts,
-                                      seed_infections  = seed_infections,
+                                      num_districts   = self.num_districts,
+                                      seed_infections = seed_infections,
                                   ),
             infection_history   = [],
         )
