@@ -141,12 +141,14 @@ def grade_trajectory(
             districts = step.city_state.districts
             if not districts:
                 continue
-            # Reward targeting the most infected district at this step
+            target = districts[step.action.district_id]
+            # Account for TREATMENT_REDUCTION: if post-treatment rate > 0.30,
+            # the district was above 0.40 before treatment — agent made the right call
+            pre_treatment_estimate = target.true_infection_rate + 0.10
             highest_id = max(districts, key=lambda d: d.true_infection_rate).district_id
-            if step.action.district_id == highest_id:
+            if pre_treatment_estimate > INFECTION_THRESHOLD:
                 correct_actions += 1
-            # Also credit actions on districts above threshold (correct triage)
-            elif districts[step.action.district_id].true_infection_rate > INFECTION_THRESHOLD:
+            elif step.action.district_id == highest_id:
                 correct_actions += 1
         efficiency_score = correct_actions / len(resource_actions)
     else:

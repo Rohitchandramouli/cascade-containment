@@ -43,7 +43,7 @@ HOSPITAL_BREACH_POINT = 0.00
 # ── Spread Mechanics ──────────────────────────────────────────────────────────
 
 SPREAD_RATE_MIN       = 0.05    # Slowest possible spread rate per day
-SPREAD_RATE_MAX       = 0.09    # Fastest possible spread rate per day
+SPREAD_RATE_MAX       = 0.08    # Fastest possible spread rate per day
 GROWTH_HINT_NOISE     = 0.03    # Noise on growth_rate_hint (± value)
 
 TREATMENT_REDUCTION   = 0.10    # Allocating reduces existing infection this step
