@@ -163,6 +163,7 @@ class EpidemicContainmentEnv(Environment):
         done, terminal_message = self._check_terminal()
 
         if done and self._trajectory:
+            self._trajectory[-1].done = True
             import server.environment as _self_module
             result = grade_trajectory(self._trajectory, self._task_name)
             _self_module._last_grade = {
@@ -176,7 +177,6 @@ class EpidemicContainmentEnv(Environment):
                 "total_steps":         result.total_steps,
                 "task_name":           self._task_name,
             }
-            self._trajectory[-1].done = True
         # ── 11. Build and return observation ──────────────────────────────────
         final_message = terminal_message if terminal_message else message
 

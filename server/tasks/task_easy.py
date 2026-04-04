@@ -22,7 +22,7 @@ class EasyTask(BaseTask):
         # D0 has a visible outbreak in WARNING-CRITICAL boundary.
         # Seed is high enough that one allocation cannot instantly contain it —
         # agent must sustain 3+ allocations while also managing D1's growth.
-        seed_infections = [0.32, 0.06]
+        seed_infections = [0.45, 0.06]
 
         return CityState(
             day                 = 0,

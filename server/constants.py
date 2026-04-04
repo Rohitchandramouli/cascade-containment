@@ -51,7 +51,7 @@ ALLOCATE_REDUCTION    = 0.10    # Allocating reduces future spread rate this ste
 RESTRICT_REDUCTION    = 0.05    # Restricting reduces spread per step
 SPILLOVER_RATE        = 0.01    # Infection fraction that spills to adjacent districts
 
-RESOURCE_REPLENISH    = 0       # No replenishment — pool is total budget for episode
+RESOURCE_REPLENISH    = 1       # No replenishment — pool is total budget for episode
 
 
 # ── Reward Weights ────────────────────────────────────────────────────────────
