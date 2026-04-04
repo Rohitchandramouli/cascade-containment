@@ -25,7 +25,7 @@ class HardTask(BaseTask):
         # be CRITICAL before the agent sees updated data.
         # 7 resources for 6 districts with delayed information is
         # the hardest possible triage scenario.
-        seed_infections = [0.10, 0.06, 0.12, 0.05, 0.13, 0.07]
+        seed_infections = [0.20, 0.14, 0.23, 0.11, 0.26, 0.17]
 
         initial_rates     = seed_infections[:]
         infection_history = [
