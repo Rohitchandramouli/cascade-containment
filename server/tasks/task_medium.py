@@ -23,7 +23,7 @@ class MediumTask(BaseTask):
         # D1 and D3 start clean but will grow into critical within 3-4 steps.
         # 8 total resources for 4 districts creates genuine triage pressure —
         # agent cannot save all districts and must choose strategically.
-        seed_infections = [0.28, 0.08, 0.25, 0.08]
+        seed_infections = [0.28, 0.05, 0.25, 0.05]
 
         return CityState(
             day                 = 0,

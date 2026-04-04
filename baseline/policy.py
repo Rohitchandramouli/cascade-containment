@@ -60,20 +60,21 @@ def build_prompt(obs: CityObservation) -> str:
     lines += [""]
 
     if not has_data_lag:
-        # Easy and medium: data is accurate, allocate reduces existing infection
         lines += [
             "HOW ACTIONS WORK:",
-            "  - 'allocate': costs 1 resource, REDUCES existing infection AND slows spread",
-            "  - 'restrict': FREE, only slows future spread, does NOT reduce infection",
-            "  - 'test': costs 1 resource, gives accurate data (NOT needed here, data is real-time)",
+            "  - 'allocate': costs 1 resource. REDUCES existing infection AND slows spread.",
+            "  - 'restrict': FREE. Only slows spread. Does NOT reduce existing infection.",
+            "  - Resources replenish by 1 each step but cannot exceed starting pool.",
             "",
-            "DECISION RULES (follow in order):",
-            "1. If ANY hospital is below 0.3 capacity: 'allocate' on that district IMMEDIATELY.",
-            "2. If resources > 0: ALWAYS 'allocate' on the district with the SINGLE HIGHEST infection rate.",
-            "3. Do NOT spread resources across multiple districts in the same turn — focus all pressure on the worst district.",
-            "4. If resources = 0: 'restrict' on the highest infected district.",
-            "5. NEVER use 'test' — data is already accurate.",
-            "6. NEVER restrict a SAFE district (below 0.2) — you will be penalised.",
+            "STRATEGY — follow this decision tree exactly:",
+            "1. If ANY hospital < 0.3 capacity → 'allocate' on that district immediately.",
+            "2. Find the district with HIGHEST infection rate.",
+            "3. If it is above 0.2 and you have resources → 'allocate' on it.",
+            "4. Keep allocating to the SAME district on the NEXT step too.",
+            "   Only switch when that district drops below 0.2 (safe).",
+            "5. If resources = 0 → 'restrict' on the highest infected district.",
+            "6. NEVER use 'test' — data is real-time and accurate.",
+            "7. NEVER restrict a district below 0.2 — you will be penalised.",
         ]
     else:
         # Hard task: data is 3 days old, act on growth_hint
