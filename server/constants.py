@@ -2,7 +2,6 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Single source of truth for all numeric configuration in the environment.
 # Nothing in this file is computed — these are fixed values only.
-# Adjust reward weights here during tuning without touching environment.py.
 # ─────────────────────────────────────────────────────────────────────────────
 
 import sys
@@ -15,56 +14,57 @@ TASK_CONFIG = {
     "easy": {
         "num_districts":    2,
         "max_steps":        10,
-        "resource_pool":    10,     # Resources available per episode
-        "data_lag_days":    0,      # Agent sees real-time infection data
+        "resource_pool":    10,
+        "data_lag_days":    0,
     },
     "medium": {
         "num_districts":    4,
         "max_steps":        15,
-        "resource_pool":    8,      # Tighter budget forces real tradeoffs
+        "resource_pool":    8,
         "data_lag_days":    0,
     },
     "hard": {
         "num_districts":    6,
         "max_steps":        15,
-        "resource_pool":    7,      # Scarce resources + delayed data
-        "data_lag_days":    3,      # Agent sees infection rates from 3 days ago
+        "resource_pool":    7,
+        "data_lag_days":    3,
     },
 }
 
 
 # ── Infection Thresholds ──────────────────────────────────────────────────────
 
-INFECTION_THRESHOLD   = 0.40    # Above this → district is in danger (penalty fires)
-SAFE_THRESHOLD        = 0.20    # Below this → district is contained (bonus fires)
-LOW_THRESHOLD         = 0.20    # Below this → restriction is deemed unnecessary
-HOSPITAL_BREACH_POINT = 0.00    # At or below this → hospital has collapsed
+INFECTION_THRESHOLD   = 0.40
+SAFE_THRESHOLD        = 0.20
+LOW_THRESHOLD         = 0.20
+HOSPITAL_BREACH_POINT = 0.00
 
 
 # ── Spread Mechanics ──────────────────────────────────────────────────────────
 
-SPREAD_RATE_MIN       = 0.04    # Slowest possible true spread rate per day
-SPREAD_RATE_MAX       = 0.15    # Fastest possible true spread rate per day
-GROWTH_HINT_NOISE     = 0.03    # Random noise added to growth_rate_hint (± value)
-TREATMENT_REDUCTION   = 0.06    # Allocating also reduces existing infection
-ALLOCATE_REDUCTION    = 0.10    # How much one 'allocate' reduces spread this step
-RESTRICT_REDUCTION    = 0.05    # How much one 'restrict' reduces spread per step
-SPILLOVER_RATE        = 0.01    # Fraction of infection that spreads to adjacent districts per day
+SPREAD_RATE_MIN       = 0.05    # Slowest possible spread rate per day
+SPREAD_RATE_MAX       = 0.13    # Fastest possible spread rate per day
+GROWTH_HINT_NOISE     = 0.03    # Noise on growth_rate_hint (± value)
 
-RESOURCE_REPLENISH    = 3       # Resource units restored at the start of each new day
+TREATMENT_REDUCTION   = 0.08    # Allocating reduces existing infection this step
+ALLOCATE_REDUCTION    = 0.10    # Allocating reduces future spread rate this step
+RESTRICT_REDUCTION    = 0.05    # Restricting reduces spread per step
+SPILLOVER_RATE        = 0.01    # Infection fraction that spills to adjacent districts
+
+RESOURCE_REPLENISH    = 0       # No replenishment — pool is total budget for episode
 
 
 # ── Reward Weights ────────────────────────────────────────────────────────────
 
-REWARD_INFECTION_PENALTY      = -0.50   # Per district above INFECTION_THRESHOLD each step
-REWARD_HOSPITAL_BREACH        = -1.00   # Per district with breached hospital capacity
-REWARD_EARLY_CONTAINMENT      = +0.50   # Base value; scaled by (1 - step/max_steps)
-REWARD_UNNECESSARY_RESTRICTION = -0.20  # Restricting a district below LOW_THRESHOLD
-REWARD_CORRECT_PRIORITISATION = +0.30   # Allocating to the highest-infected district
+REWARD_INFECTION_PENALTY       = -0.50
+REWARD_HOSPITAL_BREACH         = -1.00
+REWARD_EARLY_CONTAINMENT       = +0.50
+REWARD_UNNECESSARY_RESTRICTION = -0.20
+REWARD_CORRECT_PRIORITISATION  = +0.30
 
 
 # ── Episode Terminal Conditions ───────────────────────────────────────────────
 
-# Episode ends early (success) if ALL districts drop below SAFE_THRESHOLD.
-# Episode ends early (failure) if ANY district's hospital capacity hits HOSPITAL_BREACH_POINT.
-# Otherwise episode runs until max_steps is reached.
+# Success: ALL districts below SAFE_THRESHOLD → speed bonus fires
+# Failure: ANY hospital at HOSPITAL_BREACH_POINT → episode ends immediately
+# Natural: max_steps reached

@@ -1,10 +1,4 @@
 # baseline/policy.py
-# ─────────────────────────────────────────────────────────────────────────────
-# LLM-based policy for Cascade Containment.
-# Reads CityObservation, calls LLM via OpenAI client, returns ContainmentAction.
-# Uses environment variables for API configuration as required by hackathon rules.
-# ─────────────────────────────────────────────────────────────────────────────
-
 import os
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -15,64 +9,91 @@ from openai import OpenAI
 from models import CityObservation, ContainmentAction
 
 
-# ── Client Setup ──────────────────────────────────────────────────────────────
-
 def get_client() -> OpenAI:
-    """
-    Initialise OpenAI client from environment variables.
-    Required by hackathon rules — never hardcode API keys.
-    """
     return OpenAI(
-        api_key  = os.environ.get("HF_TOKEN", ""),
+        api_key  = os.environ.get("API_KEY") or os.environ.get("HF_TOKEN", ""),
         base_url = os.environ.get("API_BASE_URL", "https://router.huggingface.co/v1"),
     )
 
 
-# ── Prompt Builder ────────────────────────────────────────────────────────────
-
 def build_prompt(obs: CityObservation) -> str:
-    """
-    Convert a CityObservation into a clear, structured prompt.
-    The prompt gives the LLM everything it needs to make an informed decision.
-    """
+    num_districts = len(obs.districts)
+    has_data_lag  = num_districts == 6  # only hard task has lagged data
+
+    sorted_districts = sorted(
+        obs.districts,
+        key=lambda d: d.reported_infection_rate,
+        reverse=True
+    )
+
     lines = [
-        "You are a public health authority managing an epidemic outbreak.",
-        "Your goal is to contain infection across all districts before hospitals collapse.",
+        "You are an epidemic response coordinator.",
+        "Your goal: reduce infection in all districts and prevent hospital collapse.",
         "",
-        f"Current situation (Step {obs.current_step}/{obs.max_steps}):",
-        f"Available resources: {obs.available_resources}",
+        f"Step {obs.current_step}/{obs.max_steps} | Resources remaining: {obs.available_resources}",
+        "⚠️  Resources do NOT replenish. Every resource spent is gone permanently.",
         "",
-        "District status:",
+        "Districts (sorted by infection rate, highest first):",
     ]
 
-    for d in obs.districts:
-        status = "DANGER" if d.reported_infection_rate > 0.4 else \
-                 "WARNING" if d.reported_infection_rate > 0.2 else "SAFE"
+    for d in sorted_districts:
+        if d.reported_infection_rate > 0.4:
+            status = "🔴 CRITICAL"
+        elif d.reported_infection_rate > 0.2:
+            status = "🟡 WARNING"
+        else:
+            status = "🟢 SAFE"
+
+        if d.hospital_capacity_remaining < 0.3:
+            hosp_status = "⚠️ HOSPITAL DANGER"
+        elif d.hospital_capacity_remaining < 0.6:
+            hosp_status = "hospital LOW"
+        else:
+            hosp_status = "hospital OK"
+
+        lag_note = " [DATA IS 3 DAYS OLD]" if has_data_lag else ""
         lines.append(
-            f"  District {d.district_id}: "
-            f"infection={d.reported_infection_rate:.2f} [{status}], "
-            f"growth_hint={d.growth_rate_hint:.2f}, "
-            f"hospital={d.hospital_capacity_remaining:.2f}, "
-            f"restricted={'yes' if d.restriction_active else 'no'}, "
-            f"tested_recently={'yes' if d.tested_recently else 'no'}"
+            f"  D{d.district_id}: {status} infection={d.reported_infection_rate:.2f}{lag_note} "
+            f"growth={d.growth_rate_hint:.2f} {hosp_status}({d.hospital_capacity_remaining:.2f})"
         )
+
+    lines += [""]
+
+    if not has_data_lag:
+        # Easy and medium: data is accurate, allocate reduces existing infection
+        lines += [
+            "HOW ACTIONS WORK:",
+            "  - 'allocate': costs 1 resource, REDUCES existing infection AND slows spread",
+            "  - 'restrict': FREE, only slows future spread, does NOT reduce infection",
+            "  - 'test': costs 1 resource, gives accurate data (NOT needed here, data is real-time)",
+            "",
+            "DECISION RULES (follow in order):",
+            "1. If ANY hospital is below 0.3 capacity: 'allocate' on that district IMMEDIATELY.",
+            "2. If resources > 0 and any district is CRITICAL (above 0.4): 'allocate' on the highest.",
+            "3. If resources > 0 and any district is WARNING (0.2-0.4): 'allocate' on the highest.",
+            "4. If resources = 0: 'restrict' on the highest infected district.",
+            "5. NEVER use 'test' — data is already accurate.",
+            "6. NEVER restrict a SAFE district (below 0.2) — you will be penalised.",
+        ]
+    else:
+        # Hard task: data is 3 days old, act on growth_hint
+        lines += [
+            "HOW ACTIONS WORK:",
+            "  - 'allocate': costs 1 resource, reduces infection AND slows spread",
+            "  - 'restrict': FREE, only slows future spread",
+            "  - 'test': costs 1 resource (NOT recommended — data lag is unavoidable)",
+            "",
+            "DECISION RULES (follow in order):",
+            "1. If ANY hospital is below 0.3 capacity: 'allocate' on that district IMMEDIATELY.",
+            "2. If resources > 0: 'allocate' on the district with HIGHEST growth_hint.",
+            "3. If resources = 0: 'restrict' on the district with highest growth_hint.",
+            "4. NEVER use 'test' — spending resources on data wastes your limited budget.",
+        ]
 
     lines += [
         "",
-        "Available actions:",
-        "  - 'test'     : Get accurate infection data for a district (costs 1 resource)",
-        "  - 'restrict' : Impose movement restriction in a district (free, but penalised if infection is low)",
-        "  - 'allocate' : Deploy medical resources to a district (costs 1 resource)",
-        "",
-        "Strategy hints:",
-        "  - Prioritise districts in DANGER or with high growth_hint",
-        "  - Use 'test' on high growth_hint districts to reveal true infection",
-        "  - Use 'allocate' on the most infected district",
-        "  - Only 'restrict' districts above 0.2 infection rate",
-        "  - If resources = 0, you can only use 'restrict'",
-        "",
-        "Respond with ONLY a JSON object in this exact format:",
-        '{"action_type": "allocate", "district_id": 2}',
+        "Respond with ONLY valid JSON. No explanation. Example:",
+        '{"action_type": "allocate", "district_id": 0}',
         "",
         "Your decision:",
     ]
@@ -80,16 +101,13 @@ def build_prompt(obs: CityObservation) -> str:
     return "\n".join(lines)
 
 
-# ── LLM Call ──────────────────────────────────────────────────────────────────
-
 def call_llm(prompt: str, client: OpenAI) -> str:
-    """Call the LLM and return the raw response string."""
     response = client.chat.completions.create(
         model    = os.environ.get("MODEL_NAME", "meta-llama/Llama-3.1-8B-Instruct"),
         messages = [
             {
                 "role":    "system",
-                "content": "You are an epidemic response AI. Always respond with valid JSON only. No explanation."
+                "content": "You are an epidemic response AI. Always respond with valid JSON only. No explanation, no markdown."
             },
             {
                 "role":    "user",
@@ -97,27 +115,17 @@ def call_llm(prompt: str, client: OpenAI) -> str:
             }
         ],
         max_tokens  = 50,
-        temperature = 0.2,   # Low temperature for consistent, reliable decisions
+        temperature = 0.1,  # Lower temperature for more consistent decisions
     )
     return (response.choices[0].message.content or "").strip()
 
 
-# ── Response Parser ───────────────────────────────────────────────────────────
-
 def parse_action(response: str, num_districts: int) -> ContainmentAction:
-    """
-    Parse LLM response into a ContainmentAction.
-    Handles common LLM formatting issues defensively.
-    Falls back to a safe default if parsing fails entirely.
-    """
     valid_types = {"test", "restrict", "allocate"}
 
     try:
-        # Strip markdown code fences if present
         cleaned = re.sub(r"```(?:json)?|```", "", response).strip()
-
-        # Extract JSON object if surrounded by other text
-        match = re.search(r"\{.*?\}", cleaned, re.DOTALL)
+        match   = re.search(r"\{.*?\}", cleaned, re.DOTALL)
         if match:
             cleaned = match.group()
 
@@ -125,30 +133,17 @@ def parse_action(response: str, num_districts: int) -> ContainmentAction:
         action_type = str(data.get("action_type", "allocate")).lower().strip()
         district_id = int(data.get("district_id", 0))
 
-        # Validate and clamp
         if action_type not in valid_types:
             action_type = "allocate"
         district_id = max(0, min(district_id, num_districts - 1))
 
-        return ContainmentAction(
-            action_type = action_type,
-            district_id = district_id,
-        )
+        return ContainmentAction(action_type=action_type, district_id=district_id)
 
     except Exception:
-        # Safe fallback — allocate to district 0
         return ContainmentAction(action_type="allocate", district_id=0)
 
 
-# ── Main Policy Function ──────────────────────────────────────────────────────
-
 def get_action(obs: CityObservation, client: OpenAI) -> ContainmentAction:
-    """
-    Main entry point for the policy.
-    Takes an observation, returns a ContainmentAction.
-    Called by evaluator.py on every step.
-    """
-    prompt      = build_prompt(obs)
-    response    = call_llm(prompt, client)
-    action      = parse_action(response, len(obs.districts))
-    return action
+    prompt   = build_prompt(obs)
+    response = call_llm(prompt, client)
+    return parse_action(response, len(obs.districts))

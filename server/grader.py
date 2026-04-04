@@ -125,7 +125,12 @@ def grade_trajectory(
     # Fraction of allocate/test actions that targeted districts above threshold.
     # Rewards directing resources where they're actually needed.
 
-    resource_actions  = [
+    # ── Component 3: Efficiency Score ────────────────────────────────────────
+    # Rewards directing resources to the highest-infected district.
+    # Checks which district had the highest infection at each step,
+    # then rewards targeting it regardless of whether it crossed threshold.
+
+    resource_actions = [
         s for s in trajectory
         if s.action.action_type in {"allocate", "test"}
     ]
@@ -133,12 +138,19 @@ def grade_trajectory(
     if resource_actions:
         correct_actions = 0
         for step in resource_actions:
-            target = step.city_state.districts[step.action.district_id]
-            if target.true_infection_rate > INFECTION_THRESHOLD:
+            districts = step.city_state.districts
+            if not districts:
+                continue
+            # Reward targeting the most infected district at this step
+            highest_id = max(districts, key=lambda d: d.true_infection_rate).district_id
+            if step.action.district_id == highest_id:
+                correct_actions += 1
+            # Also credit actions on districts above threshold (correct triage)
+            elif districts[step.action.district_id].true_infection_rate > INFECTION_THRESHOLD:
                 correct_actions += 1
         efficiency_score = correct_actions / len(resource_actions)
     else:
-        efficiency_score = 0.5  # Neutral if no resource actions taken
+        efficiency_score = 0.5
 
     # ── Component 4: Speed Score ──────────────────────────────────────────────
     # Rewards finishing faster than max_steps.

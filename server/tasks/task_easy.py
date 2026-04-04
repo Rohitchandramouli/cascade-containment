@@ -1,14 +1,8 @@
 # server/tasks/task_easy.py
-# ─────────────────────────────────────────────────────────────────────────────
-# Easy task: 2 districts, 1 outbreak, accurate real-time data.
-# Agent should learn to test the infected district, restrict it,
-# and allocate resources. A straightforward strategy scores 0.7–0.9.
-# ─────────────────────────────────────────────────────────────────────────────
-
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))    # reaches server/
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..')) # reaches project root
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
 from models import CityState
 from server.utils import generate_districts
@@ -19,15 +13,16 @@ from server.constants import TASK_CONFIG
 class EasyTask(BaseTask):
 
     name          = "easy"
-    num_districts = TASK_CONFIG["easy"]["num_districts"]    # 2
-    max_steps     = TASK_CONFIG["easy"]["max_steps"]        # 10
-    resource_pool = TASK_CONFIG["easy"]["resource_pool"]    # 10
-    data_lag_days = TASK_CONFIG["easy"]["data_lag_days"]    # 0
+    num_districts = TASK_CONFIG["easy"]["num_districts"]
+    max_steps     = TASK_CONFIG["easy"]["max_steps"]
+    resource_pool = TASK_CONFIG["easy"]["resource_pool"]
+    data_lag_days = TASK_CONFIG["easy"]["data_lag_days"]
 
     def build_initial_state(self) -> CityState:
-        # District 0 has a visible outbreak. District 1 is clean.
-        # Agent only needs to identify and respond to one threat.
-        seed_infections = [0.25, 0.05]
+        # D0 has a visible outbreak in WARNING-CRITICAL boundary.
+        # Seed is high enough that one allocation cannot instantly contain it —
+        # agent must sustain 3+ allocations while also managing D1's growth.
+        seed_infections = [0.32, 0.06]
 
         return CityState(
             day                 = 0,
@@ -36,8 +31,8 @@ class EasyTask(BaseTask):
             data_lag_days       = self.data_lag_days,
             max_steps           = self.max_steps,
             districts           = generate_districts(
-                                      num_districts    = self.num_districts,
-                                      seed_infections  = seed_infections,
+                                      num_districts   = self.num_districts,
+                                      seed_infections = seed_infections,
                                   ),
             infection_history   = [],
         )
