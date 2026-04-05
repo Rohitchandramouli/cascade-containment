@@ -1,6 +1,5 @@
 # server/tasks/task_medium.py
-import sys
-import os
+import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
@@ -11,7 +10,6 @@ from server.constants import TASK_CONFIG
 
 
 class MediumTask(BaseTask):
-
     name          = "medium"
     num_districts = TASK_CONFIG["medium"]["num_districts"]
     max_steps     = TASK_CONFIG["medium"]["max_steps"]
@@ -19,11 +17,14 @@ class MediumTask(BaseTask):
     data_lag_days = TASK_CONFIG["medium"]["data_lag_days"]
 
     def build_initial_state(self) -> CityState:
-        # D0 and D2 seeded with outbreaks (non-adjacent).
-        # D1 and D3 start clean but will grow into critical within 3-4 steps.
-        # 8 total resources for 4 districts creates genuine triage pressure —
-        # agent cannot save all districts and must choose strategically.
-        seed_infections = [0.28, 0.05, 0.25, 0.05]
+        # D0 and D2 seeded with active outbreaks (non-adjacent boroughs).
+        # D1 and D3 start with low infections that grow into danger within
+        # 4-6 steps through spillover and their own spread rates.
+        # With only 8 resources for 4 districts over 15 steps, the agent
+        # cannot contain all districts simultaneously — genuine triage required.
+        # A dumb agent scores ~0.35, a smart agent with good prioritisation
+        # scores 0.60-0.70.
+        seed_infections = [0.35, 0.08, 0.32, 0.08]
 
         return CityState(
             day                 = 0,

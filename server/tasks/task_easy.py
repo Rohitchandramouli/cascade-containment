@@ -1,6 +1,5 @@
 # server/tasks/task_easy.py
-import sys
-import os
+import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
@@ -11,7 +10,6 @@ from server.constants import TASK_CONFIG
 
 
 class EasyTask(BaseTask):
-
     name          = "easy"
     num_districts = TASK_CONFIG["easy"]["num_districts"]
     max_steps     = TASK_CONFIG["easy"]["max_steps"]
@@ -19,10 +17,12 @@ class EasyTask(BaseTask):
     data_lag_days = TASK_CONFIG["easy"]["data_lag_days"]
 
     def build_initial_state(self) -> CityState:
-        # D0 has a visible outbreak in WARNING-CRITICAL boundary.
-        # Seed is high enough that one allocation cannot instantly contain it —
-        # agent must sustain 3+ allocations while also managing D1's growth.
-        seed_infections = [0.45, 0.06]
+        # D0 starts at the danger threshold — one district with a visible outbreak.
+        # D1 is very clean, grows slowly through spillover only.
+        # With TREATMENT_REDUCTION=0.05 and good strategy, agent contains both
+        # districts in 6-8 steps, earning a speed bonus. Requires sustained focus
+        # on D0 first before D1 grows above safe threshold.
+        seed_infections = [0.40, 0.04]
 
         return CityState(
             day                 = 0,

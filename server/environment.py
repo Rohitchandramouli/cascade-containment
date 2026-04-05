@@ -27,6 +27,7 @@ from models import (
     ContainmentAction,
 )
 from server.constants import (
+    HOSPITAL_BREACH_POINT,
     TASK_CONFIG,
     INFECTION_THRESHOLD,
     SAFE_THRESHOLD,
@@ -286,7 +287,7 @@ class EpidemicContainmentEnv(Environment):
 
         # Term 2: Heavy penalty for hospital capacity breach
         for district in self._city.districts:
-            if district.hospital_capacity_remaining <= 0.0:
+            if district.hospital_capacity_remaining <= HOSPITAL_BREACH_POINT:
                 reward += REWARD_HOSPITAL_BREACH
 
         # Term 3: Early containment bonus (decays over time)

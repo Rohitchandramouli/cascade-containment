@@ -1,190 +1,119 @@
 # server/grader.py
-# ─────────────────────────────────────────────────────────────────────────────
-# Deterministic scorer for completed Cascade Containment episodes.
-# Called by baseline/evaluator.py after each full episode.
-# Always returns a float in [0.0, 1.0].
-# ─────────────────────────────────────────────────────────────────────────────
-
-import sys
-import os
+import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from typing import List, Tuple
+from typing import List
 from dataclasses import dataclass
-
 from models import CityState, ContainmentAction
 from server.constants import (
     INFECTION_THRESHOLD,
     SAFE_THRESHOLD,
     HOSPITAL_BREACH_POINT,
+    TREATMENT_REDUCTION,
     TASK_CONFIG,
 )
 
 
-# ── Trajectory Record ─────────────────────────────────────────────────────────
-
 @dataclass
 class TrajectoryStep:
-    """
-    A single recorded step in an episode.
-    Stored by environment.py and passed to the grader after episode ends.
-    """
     step:          int
-    city_state:    CityState           # Hidden ground truth at this step
-    action:        ContainmentAction   # What the agent did
-    reward:        float               # Reward received
-    done:          bool                # Was this the final step
+    city_state:    CityState
+    action:        ContainmentAction
+    reward:        float
+    done:          bool
 
-
-# ── Grader Score Breakdown ────────────────────────────────────────────────────
 
 @dataclass
 class GradeResult:
-    """
-    Full scoring breakdown for one episode.
-    The final_score is what the evaluator reports.
-    """
-    final_score:          float   # Weighted composite: 0.0 to 1.0
-    containment_score:    float   # How well infection was kept below threshold
-    hospital_score:       float   # How well hospital capacity was preserved
-    efficiency_score:     float   # How well resources were directed
-    speed_score:          float   # How quickly the episode was resolved
-    hospital_breached:    bool    # Whether any hospital collapse occurred
-    districts_contained:  int     # How many districts ended below safe threshold
-    total_steps:          int     # Steps taken before episode ended
+    final_score:          float
+    containment_score:    float
+    hospital_score:       float
+    efficiency_score:     float
+    speed_score:          float
+    hospital_breached:    bool
+    districts_contained:  int
+    total_steps:          int
 
 
-# ── Main Grader ───────────────────────────────────────────────────────────────
-
-def grade_trajectory(
-    trajectory: List[TrajectoryStep],
-    task_name:  str,
-) -> GradeResult:
-    """
-    Score a completed episode trajectory.
-
-    Args:
-        trajectory: Ordered list of TrajectoryStep from one full episode.
-        task_name:  "easy", "medium", or "hard" — affects scoring strictness.
-
-    Returns:
-        GradeResult with final_score in [0.0, 1.0] and full breakdown.
-    """
+def grade_trajectory(trajectory: List[TrajectoryStep], task_name: str) -> GradeResult:
     if not trajectory:
-        return GradeResult(
-            final_score         = 0.0,
-            containment_score   = 0.0,
-            hospital_score      = 0.0,
-            efficiency_score    = 0.0,
-            speed_score         = 0.0,
-            hospital_breached   = False,
-            districts_contained = 0,
-            total_steps         = 0,
-        )
+        return GradeResult(0.0, 0.0, 0.0, 0.0, 0.0, False, 0, 0)
 
-    config       = TASK_CONFIG[task_name]
+    config        = TASK_CONFIG[task_name]
     num_districts = config["num_districts"]
     max_steps     = config["max_steps"]
     total_steps   = len(trajectory)
 
     # ── Component 1: Containment Score ───────────────────────────────────────
     # Fraction of district-days that stayed below infection threshold.
-    # Perfect agent = 1.0 (no district ever exceeded threshold).
-
-    total_district_days   = total_steps * num_districts
-    safe_district_days    = 0
-
-    for step in trajectory[2:]:  # skip first 2 steps
+    # Skips first 2 steps (initial conditions outside agent's control).
+    safe_district_days  = 0
+    for step in trajectory[2:]:
         for district in step.city_state.districts:
             if district.true_infection_rate <= INFECTION_THRESHOLD:
                 safe_district_days += 1
-
     total_district_days = max(len(trajectory) - 2, 1) * num_districts
-
-    containment_score = safe_district_days / total_district_days
+    containment_score   = safe_district_days / total_district_days
 
     # ── Component 2: Hospital Score ───────────────────────────────────────────
-    # Measures how well hospital capacity was preserved across the episode.
-    # Any breach = heavy penalty. Near-breach is also penalised proportionally.
-
+    # Average capacity preserved. Breach multiplier of 0.6 if any district collapsed.
     hospital_breached       = False
     total_capacity_preserved = 0.0
-
     for step in trajectory:
         for district in step.city_state.districts:
             if district.hospital_capacity_remaining <= HOSPITAL_BREACH_POINT:
                 hospital_breached = True
             total_capacity_preserved += district.hospital_capacity_remaining
-
-    hospital_district_days = total_steps * num_districts   # all steps, not grace-period-adjusted
-    avg_capacity = total_capacity_preserved / hospital_district_days
-    hospital_score   = avg_capacity * (0.6 if hospital_breached else 1.0)
-    hospital_score   = round(min(1.0, max(0.0, hospital_score)), 4)
+    hospital_district_days = total_steps * num_districts
+    avg_capacity   = total_capacity_preserved / hospital_district_days
+    hospital_score = round(min(1.0, max(0.0, avg_capacity * (0.6 if hospital_breached else 1.0))), 4)
 
     # ── Component 3: Efficiency Score ────────────────────────────────────────
-    # Fraction of allocate/test actions that targeted districts above threshold.
-    # Rewards directing resources where they're actually needed.
-
-    # ── Component 3: Efficiency Score ────────────────────────────────────────
-    # Rewards directing resources to the highest-infected district.
-    # Checks which district had the highest infection at each step,
-    # then rewards targeting it regardless of whether it crossed threshold.
-
-    resource_actions = [
-        s for s in trajectory
-        if s.action.action_type in {"allocate", "test"}
-    ]
-
-    if resource_actions:
-        correct_actions = 0
-        for step in resource_actions:
-            districts = step.city_state.districts
-            if not districts:
-                continue
-            target = districts[step.action.district_id]
-            # Account for TREATMENT_REDUCTION: if post-treatment rate > 0.30,
-            # the district was above 0.40 before treatment — agent made the right call
-            pre_treatment_estimate = target.true_infection_rate + 0.10
-            highest_id = max(districts, key=lambda d: d.true_infection_rate).district_id
-            if pre_treatment_estimate > INFECTION_THRESHOLD:
-                correct_actions += 1
-            elif step.action.district_id == highest_id:
-                correct_actions += 1
-        efficiency_score = correct_actions / len(resource_actions)
-    else:
-        efficiency_score = 0.5
+    # Fraction of resource actions that targeted the right district.
+    # Uses the PREVIOUS step's infection rates (pre-action state) so that
+    # successful treatments are not penalised retroactively.
+    correct_actions = 0
+    total_resource  = 0
+    for idx, step in enumerate(trajectory):
+        if step.action.action_type not in {"allocate", "test"}:
+            continue
+        total_resource += 1
+        # Determine pre-action infection state
+        if idx > 0:
+            prev_districts  = trajectory[idx - 1].city_state.districts
+            pre_action_rate = prev_districts[step.action.district_id].true_infection_rate
+            highest_before  = max(prev_districts, key=lambda d: d.true_infection_rate).district_id
+        else:
+            # First step: estimate pre-action rate from post-action + treatment
+            curr_d          = step.city_state.districts[step.action.district_id]
+            pre_action_rate = curr_d.true_infection_rate + TREATMENT_REDUCTION
+            highest_before  = max(step.city_state.districts, key=lambda d: d.true_infection_rate).district_id
+        # Correct if the targeted district was above threshold before action,
+        # or if it was the most infected district at the time
+        if pre_action_rate > INFECTION_THRESHOLD or step.action.district_id == highest_before:
+            correct_actions += 1
+    efficiency_score = correct_actions / max(total_resource, 1)
 
     # ── Component 4: Speed Score ──────────────────────────────────────────────
-    # Rewards finishing faster than max_steps.
-    # If episode ran to max_steps, speed_score = 0.0.
-    # If contained in half the steps, speed_score = 0.5. Etc.
-
-    last_step = trajectory[-1]
-    if last_step.done and total_steps < max_steps:
-        speed_score = round(1.0 - (total_steps / max_steps), 4)
-        speed_score = max(0.0, speed_score)
-    else:
-        speed_score = 0.0   # No speed bonus for failed or incomplete episodes
+    # Reward early containment. Only fires if episode ended before max_steps.
+    last_step   = trajectory[-1]
+    speed_score = round(max(0.0, 1.0 - total_steps / max_steps), 4) \
+                  if last_step.done and total_steps < max_steps else 0.0
 
     # ── Final Weighted Score ──────────────────────────────────────────────────
-    # Weights reflect judging priorities:
-    #   containment = primary signal
-    #   hospital    = safety constraint
-    #   efficiency  = quality differentiator
-    #   speed       = tiebreaker
+    # Hospital (45%) is the primary constraint — system collapse is catastrophic.
+    # Containment (30%) — keeping infection below dangerous levels.
+    # Efficiency (15%) — quality of resource allocation decisions.
+    # Speed (10%) — tiebreaker rewarding proactive early containment.
+    final_score = round(min(1.0, max(0.0,
+        containment_score * 0.30 +
+        hospital_score    * 0.45 +
+        efficiency_score  * 0.15 +
+        speed_score       * 0.10
+    )), 4)
 
-    final_score = (
-        containment_score  * 0.30 +
-        hospital_score     * 0.45 +
-        efficiency_score   * 0.15 +
-        speed_score        * 0.10
-    )
-    final_score = round(min(1.0, max(0.0, final_score)), 4)
-
-    # ── Final district count ──────────────────────────────────────────────────
-    final_step          = trajectory[-1]
     districts_contained = sum(
-        1 for d in final_step.city_state.districts
+        1 for d in trajectory[-1].city_state.districts
         if d.true_infection_rate < SAFE_THRESHOLD
     )
 
@@ -200,15 +129,5 @@ def grade_trajectory(
     )
 
 
-# ── Convenience: Grade a Single Score to 0.0–1.0 ─────────────────────────────
-
-def grade_task(
-    trajectory: List[TrajectoryStep],
-    task_name:  str,
-) -> float:
-    """
-    Thin wrapper that returns just the final_score float.
-    Used by baseline/evaluator.py for clean score reporting.
-    """
-    result = grade_trajectory(trajectory, task_name)
-    return result.final_score
+def grade_task(trajectory: List[TrajectoryStep], task_name: str) -> float:
+    return grade_trajectory(trajectory, task_name).final_score
