@@ -106,8 +106,8 @@ def grade_trajectory(trajectory: List[TrajectoryStep], task_name: str) -> GradeR
     # Efficiency (15%) — quality of resource allocation decisions.
     # Speed (10%) — tiebreaker rewarding proactive early containment.
     final_score = round(min(1.0, max(0.0,
-        containment_score * 0.30 +
-        hospital_score    * 0.45 +
+        containment_score * 0.45 +
+        hospital_score    * 0.30 +
         efficiency_score  * 0.15 +
         speed_score       * 0.10
     )), 4)

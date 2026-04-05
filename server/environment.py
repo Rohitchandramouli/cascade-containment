@@ -260,7 +260,7 @@ class EpidemicContainmentEnv(Environment):
             if district.true_infection_rate > INFECTION_THRESHOLD:
                 # Capacity drains proportional to how far above threshold
                 excess   = district.true_infection_rate - INFECTION_THRESHOLD
-                drain    = round(excess * 0.15, 4)
+                drain = round(excess * 0.25, 4)
                 district.hospital_capacity_remaining = max(
                     0.0,
                     district.hospital_capacity_remaining - drain
