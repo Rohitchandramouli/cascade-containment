@@ -24,7 +24,7 @@ class MediumTask(BaseTask):
         # cannot contain all districts simultaneously — genuine triage required.
         # A dumb agent scores ~0.35, a smart agent with good prioritisation
         # scores 0.60-0.70.
-        seed_infections = [0.35, 0.08, 0.32, 0.08]
+        seed_infections = [0.42, 0.10, 0.38, 0.10]
 
         return CityState(
             day                 = 0,
