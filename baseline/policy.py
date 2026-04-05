@@ -1,10 +1,6 @@
 # baseline/policy.py
-import os
-import sys
+import os, sys, json, re
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
-import json
-import re
 from openai import OpenAI
 from models import CityObservation, ContainmentAction
 
@@ -27,21 +23,24 @@ def build_prompt(obs: CityObservation) -> str:
     )
 
     lines = [
-        "You are an epidemic response coordinator.",
-        "Your goal: reduce infection in all districts and prevent hospital collapse.",
+        "You are an epidemic response coordinator making life-or-death resource decisions.",
+        "Your goal: keep infection BELOW 0.40 in all districts and prevent hospital collapse.",
         "",
         f"Step {obs.current_step}/{obs.max_steps} | Resources remaining: {obs.available_resources}",
-        "ℹ️  Resources replenish by 1 each step but cannot exceed your starting pool.",
-        "   Spend wisely — you can never have more resources than the starting amount.",
+        "ℹ️  Resources replenish by 1 each step, capped at starting pool. Spend carefully.",
         "",
-        "Districts (sorted by infection rate, highest first):",
+        "Districts (sorted by CURRENT infection, highest threat first):",
     ]
 
     for d in sorted_districts:
         if d.reported_infection_rate > 0.4:
             status = "🔴 CRITICAL"
         elif d.reported_infection_rate > 0.2:
-            status = "🟡 WARNING"
+            # Add escalation warning based on growth hint
+            if d.growth_rate_hint > 0.06:
+                status = "🟡 WARNING→CRITICAL SOON"
+            else:
+                status = "🟡 WARNING"
         else:
             status = "🟢 SAFE"
 
@@ -52,7 +51,7 @@ def build_prompt(obs: CityObservation) -> str:
         else:
             hosp_status = "hospital OK"
 
-        lag_note = " [DATA IS 3 DAYS OLD]" if has_data_lag else ""
+        lag_note = " [3-DAY OLD DATA]" if has_data_lag else ""
         lines.append(
             f"  D{d.district_id}: {status} infection={d.reported_infection_rate:.2f}{lag_note} "
             f"growth={d.growth_rate_hint:.2f} {hosp_status}({d.hospital_capacity_remaining:.2f})"
@@ -63,45 +62,56 @@ def build_prompt(obs: CityObservation) -> str:
     if not has_data_lag:
         lines += [
             "HOW ACTIONS WORK:",
-            "  - 'allocate': costs 1 resource. REDUCES existing infection AND slows spread.",
-            "    Infections naturally recover slightly each day, but spread dominates",
-            "    without intervention. Sustained allocation is needed to drive below safe.",
-            "  - 'restrict': FREE. Slows future spread. Does NOT reduce existing infection.",
-            "    Use when resources are low or for WARNING districts.",
-            "  - 'test': costs 1 resource. Reveals accurate data. (Not needed — data is real-time.)",
+            "  - 'allocate': costs 1 resource. REDUCES existing infection by 5% AND slows spread.",
+            "    Infections naturally recover 1%/day but spread (3-8%/day) dominates without action.",
+            "    You need SUSTAINED allocation (multiple steps) to drive a district below safe level.",
+            "  - 'restrict': FREE. Slows future spread only. Does NOT reduce existing infection.",
+            "    Use only when you have no resources OR for districts already below 0.20.",
+            "  - 'test': wastes 1 resource. Data is already real-time. NEVER use this.",
             "",
-            "STRATEGY — follow in order:",
-            "1. If ANY hospital is below 0.3 capacity: 'allocate' on that district IMMEDIATELY.",
-            "2. Find the district with HIGHEST infection rate.",
-            "3. If it is above 0.2 and you have resources: 'allocate' on it.",
-            "4. Keep allocating to the SAME district next step too.",
-            "   Only switch when that district drops below 0.2 (safe).",
-            "5. If resources = 0: 'restrict' on the highest infected district.",
-            "6. NEVER use 'test' — data is real-time and accurate.",
-            "7. NEVER restrict a district below 0.2 — you will be penalised.",
+            "DECISION RULES — follow this priority order every step:",
+            "1. HOSPITAL EMERGENCY: If ANY hospital < 0.30 capacity → allocate on that district NOW.",
+            "2. TRIAGE: Look at ALL districts. Find the one with the HIGHEST infection rate right now.",
+            "   That is your target this step. Do not stick to the same district if another is worse.",
+            "3. CRITICAL DISTRICT (above 0.40 and have resources): allocate on the highest.",
+            "4. WARNING DISTRICT (0.20-0.40) with growth > 0.06 AND resources available:",
+            "   allocate on it NOW to prevent it from becoming CRITICAL next step.",
+            "5. If resources = 0: restrict on the highest infected district.",
+            "6. NEVER restrict a district below 0.20 — you will be penalised.",
+            "7. NEVER use 'test' — it wastes a resource you cannot afford.",
+            "",
+            "KEY INSIGHT: Infection spreads 3-8% per day. A WARNING district at 0.38 with",
+            "growth=0.07 will be CRITICAL next step. Act before it escalates, not after.",
         ]
     else:
         lines += [
             "HOW ACTIONS WORK:",
             "  - 'allocate': costs 1 resource. Reduces infection AND slows spread.",
-            "    Data is 3 days old — act on growth_hint to anticipate true state.",
             "  - 'restrict': FREE. Slows future spread only.",
-            "  - 'test': costs 1 resource. (NOT recommended — lag is unavoidable.)",
+            "  - Data is 3 DAYS OLD — you cannot see current true infection rates.",
+            "    Use growth_hint to estimate which districts are getting worse fastest.",
             "",
-            "STRATEGY — follow in order:",
-            "1. If ANY hospital is below 0.3 capacity: 'allocate' on that district IMMEDIATELY.",
-            "2. If resources > 0: 'allocate' on the district with HIGHEST growth_hint.",
-            "   High growth_hint means true infection is accelerating — act early.",
-            "3. If resources = 0: 'restrict' on the district with highest growth_hint.",
-            "4. NEVER use 'test' — spending resources on information wastes your budget.",
+            "DECISION RULES for delayed-information scenario:",
+            "1. HOSPITAL EMERGENCY: If ANY hospital < 0.30 → allocate on that district NOW.",
+            "   Hospital capacity IS real-time even when infection data is lagged.",
+            "2. TRIAGE under uncertainty: Combine lagged infection + growth_hint to estimate severity.",
+            "   A district with infection=0.20 (3 days ago) and growth=0.08 is NOW likely at ~0.44.",
+            "   Formula: estimated_current = reported_infection + 3 × growth_hint",
+            "3. Allocate on the district with HIGHEST estimated current infection.",
+            "4. If resources = 0: restrict on the district with highest growth_hint.",
+            "5. NEVER use 'test' — the 3-day lag is structural, testing does not help.",
         ]
 
     lines += [
         "",
-        "Respond with ONLY valid JSON. No explanation. Example:",
+        "Think briefly (1 sentence): Which district is most dangerous RIGHT NOW and why?",
+        "Then give your JSON decision.",
+        "",
+        "Example response:",
+        'District 0 is critical at 0.65 and growing fastest.',
         '{"action_type": "allocate", "district_id": 0}',
         "",
-        "Your decision:",
+        "Your response:",
     ]
 
     return "\n".join(lines)
@@ -113,14 +123,15 @@ def call_llm(prompt: str, client: OpenAI) -> str:
         messages = [
             {
                 "role":    "system",
-                "content": "You are an epidemic response AI. Always respond with valid JSON only. No explanation, no markdown."
+                "content": (
+                    "You are an epidemic response AI. "
+                    "First write one sentence of reasoning, then a JSON action on the next line. "
+                    "JSON must be valid and contain action_type and district_id."
+                )
             },
-            {
-                "role":    "user",
-                "content": prompt
-            }
+            {"role": "user", "content": prompt}
         ],
-        max_tokens  = 50,
+        max_tokens  = 120,   # increased to allow brief reasoning + JSON
         temperature = 0.1,
     )
     return (response.choices[0].message.content or "").strip()

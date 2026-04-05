@@ -1,17 +1,8 @@
 # baseline/evaluator.py
-# ─────────────────────────────────────────────────────────────────────────────
-# GRPO-style evaluation loop for Cascade Containment.
-# Imports core components — stays focused on orchestration only.
-# ─────────────────────────────────────────────────────────────────────────────
-
-import os
-import sys
+import os, sys, time
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
-import time
-from typing import List, Tuple
+from typing import List, Tuple, Any
 from openai import OpenAI
-from typing import Any
 
 from client import CascadeContainmentEnv
 from models import ContainmentAction, CityObservation
@@ -19,16 +10,12 @@ from baseline.policy import get_client, build_prompt, call_llm, parse_action
 from core.trajectory import EpisodicMemory
 from core.reward import normalise_score
 from core.policy_update import compute_advantage, update_memory
-
 import requests as http_requests
 
-N_ROLLOUTS = 5
+N_ROLLOUTS = 8   # increased from 5 — GRPO needs more rollouts for stable learning signal
 
-
-# ── Prompt Builder With Memory ────────────────────────────────────────────────
 
 def build_prompt_with_memory(obs: CityObservation, memory: EpisodicMemory) -> str:
-    """Extend base prompt with retrieved memories from similar past situations."""
     from baseline.policy import build_prompt
     base         = build_prompt(obs)
     memory_block = memory.retrieve(obs)
@@ -36,25 +23,15 @@ def build_prompt_with_memory(obs: CityObservation, memory: EpisodicMemory) -> st
     if not memory_block:
         return base
 
-    injection = (
-        "\n"
-        + memory_block
-        + "\nUse these past experiences to make a better decision.\n"
-    )
-    return base.replace("Your decision:", injection + "Your decision:")
+    injection = "\n" + memory_block + "\nApply these lessons to your current decision.\n"
+    return base.replace("Your response:", injection + "Your response:")
 
-
-# ── Single Rollout ────────────────────────────────────────────────────────────
 
 def run_rollout(
-    env:       Any,
-    task_name: str,
-    client:    OpenAI,
-    memory:    EpisodicMemory,
-    verbose:   bool = True,
+    env: Any, task_name: str, client: OpenAI,
+    memory: EpisodicMemory, verbose: bool = True,
 ) -> Tuple[float, int, List[dict]]:
-    """Run one complete episode using memory-augmented prompts."""
-    result = env.reset(task_name=task_name)
+    result       = env.reset(task_name=task_name)
     obs          = result.observation
     done         = result.done
     total_reward = 0.0
@@ -67,11 +44,11 @@ def run_rollout(
         action   = parse_action(response, len(obs.districts))
 
         try:
-            result   = env.step(action)
+            result = env.step(action)
         except Exception as e:
             if "close frame" in str(e).lower() or "websocket" in str(e).lower():
                 if verbose:
-                    print(f"      ⚠ WebSocket dropped at step {step+1}, ending rollout early")
+                    print(f"      ⚠ WebSocket dropped at step {step+1}, ending early")
                 break
             raise
 
@@ -81,17 +58,12 @@ def run_rollout(
         total_reward += reward
         step         += 1
 
-        trajectory.append({
-            "obs":    obs,
-            "action": action,
-            "reward": reward,
-        })
+        trajectory.append({"obs": obs, "action": action, "reward": reward})
 
         if verbose:
             print(
                 f"      step {step:2d}: {action.action_type:8} "
-                f"→ district {action.district_id} "
-                f"| reward: {reward:+.4f}"
+                f"→ district {action.district_id} | reward: {reward:+.4f}"
             )
 
         obs = next_obs
@@ -101,16 +73,10 @@ def run_rollout(
     return total_reward, step, trajectory
 
 
-# ── GRPO Task Runner ──────────────────────────────────────────────────────────
-
 def run_task_grpo(
-    env:       Any,
-    task_name: str,
-    client:    OpenAI,
-    base_url:  str,
-    verbose:   bool = True,
+    env: Any, task_name: str, client: OpenAI,
+    base_url: str, verbose: bool = True,
 ) -> float:
-    """GRPO-style simulated learning loop for one task."""
     if verbose:
         print(f"\n  Task: {task_name.upper()} | {N_ROLLOUTS} rollouts")
         print(f"  {'─'*44}")
@@ -123,14 +89,13 @@ def run_task_grpo(
             label = "base prompt" if len(memory) == 0 else f"memory: {len(memory)} entries"
             print(f"\n    Rollout {i+1}/{N_ROLLOUTS} [{label}]")
 
-        total_reward, steps, trajectory = run_rollout(env, task_name, client, memory, verbose)
+        total_reward, steps, trajectory = run_rollout(
+            env, task_name, client, memory, verbose
+        )
 
-        # Get proper grader score from server
         num_districts = {"easy": 2, "medium": 4, "hard": 6}.get(task_name, 2)
         try:
-            grade_resp = http_requests.get(
-                base_url.rstrip('/') + '/grade', timeout=10
-            )
+            grade_resp = http_requests.get(base_url.rstrip('/') + '/grade', timeout=10)
             if grade_resp.status_code == 200:
                 data  = grade_resp.json()
                 score = data["final_score"]
@@ -146,26 +111,24 @@ def run_task_grpo(
         except Exception:
             score = normalise_score(total_reward, steps, num_districts)
 
-        # Append BEFORE advantage computation
         rollouts.append((total_reward, steps, score))
 
         if verbose:
             print(f"    → Reward: {total_reward:+.4f} | Score: {score:.4f}")
 
-        # ── GRPO advantage computation and memory update ──────────────────────
         completed_rewards = [r[0] for r in rollouts]
         advantage         = compute_advantage(total_reward, completed_rewards[:-1])
         stored            = update_memory(memory, trajectory, advantage)
 
         if verbose:
             mean = sum(completed_rewards[:-1]) / max(len(completed_rewards) - 1, 1) \
-                if len(completed_rewards) > 1 else total_reward
+                   if len(completed_rewards) > 1 else total_reward
             print(f"    → Advantage: {advantage:+.4f} | "
                 + (f"↑ Stored {stored} steps" if stored > 0 else "↓ Suppressed"))
 
     all_rewards = [r[0] for r in rollouts]
     mean_reward = sum(all_rewards) / len(all_rewards)
-    best_score = max(rollouts, key=lambda x: x[2])[2]
+    best_score  = max(rollouts, key=lambda x: x[2])[2]
 
     if verbose:
         print(f"\n  Rewards:    {[round(r, 4) for r in all_rewards]}")
@@ -176,13 +139,7 @@ def run_task_grpo(
     return best_score
 
 
-# ── Full Evaluator ────────────────────────────────────────────────────────────
-
-def run_evaluation(
-    base_url: str  = "http://localhost:7860",
-    verbose:  bool = True,
-) -> dict:
-    """Run all three tasks with GRPO episodic memory learning."""
+def run_evaluation(base_url: str = "http://localhost:7860", verbose: bool = True) -> dict:
     if verbose:
         print("\n" + "="*52)
         print("  CASCADE CONTAINMENT — GRPO EVALUATION")
@@ -209,10 +166,8 @@ def run_evaluation(
                     traceback.print_exc()
 
     scores["average"] = round(
-        sum(v for k, v in scores.items() if k != "average") / 3,
-        4
+        sum(v for k, v in scores.items() if k != "average") / 3, 4
     )
-
     elapsed = round(time.time() - start, 1)
 
     if verbose:
