@@ -18,7 +18,7 @@ def get_client() -> OpenAI:
 
 def build_prompt(obs: CityObservation) -> str:
     num_districts = len(obs.districts)
-    has_data_lag  = num_districts == 6  # only hard task has lagged data
+    has_data_lag  = num_districts == 6
 
     sorted_districts = sorted(
         obs.districts,
@@ -31,7 +31,8 @@ def build_prompt(obs: CityObservation) -> str:
         "Your goal: reduce infection in all districts and prevent hospital collapse.",
         "",
         f"Step {obs.current_step}/{obs.max_steps} | Resources remaining: {obs.available_resources}",
-        "⚠️  Resources do NOT replenish. Every resource spent is gone permanently.",
+        "ℹ️  Resources replenish by 1 each step but cannot exceed your starting pool.",
+        "   Spend wisely — you can never have more resources than the starting amount.",
         "",
         "Districts (sorted by infection rate, highest first):",
     ]
@@ -63,33 +64,36 @@ def build_prompt(obs: CityObservation) -> str:
         lines += [
             "HOW ACTIONS WORK:",
             "  - 'allocate': costs 1 resource. REDUCES existing infection AND slows spread.",
-            "  - 'restrict': FREE. Only slows spread. Does NOT reduce existing infection.",
-            "  - Resources replenish by 1 each step but cannot exceed starting pool.",
+            "    Infections naturally recover slightly each day, but spread dominates",
+            "    without intervention. Sustained allocation is needed to drive below safe.",
+            "  - 'restrict': FREE. Slows future spread. Does NOT reduce existing infection.",
+            "    Use when resources are low or for WARNING districts.",
+            "  - 'test': costs 1 resource. Reveals accurate data. (Not needed — data is real-time.)",
             "",
-            "STRATEGY — follow this decision tree exactly:",
-            "1. If ANY hospital < 0.3 capacity → 'allocate' on that district immediately.",
+            "STRATEGY — follow in order:",
+            "1. If ANY hospital is below 0.3 capacity: 'allocate' on that district IMMEDIATELY.",
             "2. Find the district with HIGHEST infection rate.",
-            "3. If it is above 0.2 and you have resources → 'allocate' on it.",
-            "4. Keep allocating to the SAME district on the NEXT step too.",
+            "3. If it is above 0.2 and you have resources: 'allocate' on it.",
+            "4. Keep allocating to the SAME district next step too.",
             "   Only switch when that district drops below 0.2 (safe).",
-            "5. If resources = 0 → 'restrict' on the highest infected district.",
+            "5. If resources = 0: 'restrict' on the highest infected district.",
             "6. NEVER use 'test' — data is real-time and accurate.",
             "7. NEVER restrict a district below 0.2 — you will be penalised.",
         ]
     else:
-        # Hard task: data is 3 days old, act on growth_hint
         lines += [
             "HOW ACTIONS WORK:",
-            "  - 'allocate': costs 1 resource, reduces infection AND slows spread",
-            "  - 'restrict': FREE, only slows future spread",
-            "  - 'test': costs 1 resource (NOT recommended — data lag is unavoidable)",
+            "  - 'allocate': costs 1 resource. Reduces infection AND slows spread.",
+            "    Data is 3 days old — act on growth_hint to anticipate true state.",
+            "  - 'restrict': FREE. Slows future spread only.",
+            "  - 'test': costs 1 resource. (NOT recommended — lag is unavoidable.)",
             "",
-            "DECISION RULES (follow in order):",
+            "STRATEGY — follow in order:",
             "1. If ANY hospital is below 0.3 capacity: 'allocate' on that district IMMEDIATELY.",
             "2. If resources > 0: 'allocate' on the district with HIGHEST growth_hint.",
-            "3. Sustain pressure — keep allocating to the same district until growth_hint drops below 0.08.",
-            "4. If resources = 0: 'restrict' on highest growth_hint district.",
-            "5. NEVER use 'test'.",
+            "   High growth_hint means true infection is accelerating — act early.",
+            "3. If resources = 0: 'restrict' on the district with highest growth_hint.",
+            "4. NEVER use 'test' — spending resources on information wastes your budget.",
         ]
 
     lines += [
@@ -117,30 +121,25 @@ def call_llm(prompt: str, client: OpenAI) -> str:
             }
         ],
         max_tokens  = 50,
-        temperature = 0.1,  # Lower temperature for more consistent decisions
+        temperature = 0.1,
     )
     return (response.choices[0].message.content or "").strip()
 
 
 def parse_action(response: str, num_districts: int) -> ContainmentAction:
     valid_types = {"test", "restrict", "allocate"}
-
     try:
         cleaned = re.sub(r"```(?:json)?|```", "", response).strip()
         match   = re.search(r"\{.*?\}", cleaned, re.DOTALL)
         if match:
             cleaned = match.group()
-
         data        = json.loads(cleaned)
         action_type = str(data.get("action_type", "allocate")).lower().strip()
         district_id = int(data.get("district_id", 0))
-
         if action_type not in valid_types:
             action_type = "allocate"
         district_id = max(0, min(district_id, num_districts - 1))
-
         return ContainmentAction(action_type=action_type, district_id=district_id)
-
     except Exception:
         return ContainmentAction(action_type="allocate", district_id=0)
 
