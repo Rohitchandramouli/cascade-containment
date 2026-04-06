@@ -106,13 +106,11 @@ def build_prompt(obs: CityObservation) -> str:
             "",
             "DECISION RULES for delayed-information scenario:",
             "1. HOSPITAL EMERGENCY: If ANY hospital < 0.30 → allocate on that district NOW.",
-            "   Hospital capacity IS real-time even when infection data is lagged.",
-            "2. TRIAGE under uncertainty: Combine lagged infection + growth_hint to estimate severity.",
-            "   A district with infection=0.20 (3 days ago) and growth=0.08 is NOW likely at ~0.44.",
-            "   Formula: estimated_current = reported_infection + 3 × growth_hint",
-            "3. Allocate on the district with HIGHEST estimated current infection.",
-            "4. If resources = 0: restrict on the district with highest growth_hint.",
-            "5. NEVER use 'test' — the 3-day lag is structural, testing does not help.",
+            "2. Look at ESTIMATED NOW column — this is your best estimate of current infection.",
+            "   The estimation accounts for 3 days of growth automatically.",
+            "3. Allocate on the district with HIGHEST 'ESTIMATED NOW' value.",
+            "4. If resources = 0: restrict on the district with highest ESTIMATED NOW.",
+            "5. NEVER use 'test' — data lag is structural, testing does not help.",
         ]
 
     lines += [
