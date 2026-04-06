@@ -20,7 +20,7 @@ class EpisodicMemory:
 
     def store(self, obs: CityObservation, action: ContainmentAction, reward: float):
         """Store a step only if it earned meaningful positive reward."""
-        if reward < 0.0:   # stricter threshold — only store clearly positive steps
+        if reward < -0.3:   # stricter threshold — only store clearly positive steps
             return
 
         # Phase: early/mid/late episode

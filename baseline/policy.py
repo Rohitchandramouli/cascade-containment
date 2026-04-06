@@ -36,7 +36,6 @@ def build_prompt(obs: CityObservation) -> str:
         if d.reported_infection_rate > 0.4:
             status = "🔴 CRITICAL"
         elif d.reported_infection_rate > 0.2:
-            # Add escalation warning based on growth hint
             if d.growth_rate_hint > 0.06:
                 status = "🟡 WARNING→CRITICAL SOON"
             else:
@@ -51,11 +50,25 @@ def build_prompt(obs: CityObservation) -> str:
         else:
             hosp_status = "hospital OK"
 
-        lag_note = " [3-DAY OLD DATA]" if has_data_lag else ""
-        lines.append(
-            f"  D{d.district_id}: {status} infection={d.reported_infection_rate:.2f}{lag_note} "
-            f"growth={d.growth_rate_hint:.2f} {hosp_status}({d.hospital_capacity_remaining:.2f})"
-        )
+        if has_data_lag:
+            # Pre-compute estimated current infection — don't ask LLM to do math
+            estimated = round(min(1.0, d.reported_infection_rate + 3 * d.growth_rate_hint), 2)
+            if estimated > 0.4:
+                est_status = "🔴 EST.CRITICAL"
+            elif estimated > 0.2:
+                est_status = "🟡 EST.WARNING"
+            else:
+                est_status = "🟢 EST.SAFE"
+            lines.append(
+                f"  D{d.district_id}: reported={d.reported_infection_rate:.2f} [3 days old] "
+                f"growth={d.growth_rate_hint:.2f} → ESTIMATED NOW={estimated:.2f} {est_status} "
+                f"{hosp_status}({d.hospital_capacity_remaining:.2f})"
+            )
+        else:
+            lines.append(
+                f"  D{d.district_id}: {status} infection={d.reported_infection_rate:.2f} "
+                f"growth={d.growth_rate_hint:.2f} {hosp_status}({d.hospital_capacity_remaining:.2f})"
+            )
 
     lines += [""]
 
