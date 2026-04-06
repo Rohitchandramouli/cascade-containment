@@ -32,7 +32,7 @@ from core.policy_update import compute_advantage, update_memory
 # ── Configuration ─────────────────────────────────────────────────────────────
 
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
-MODEL_NAME   = os.getenv("MODEL_NAME",   "meta-llama/llama-3.1-70b-versatile")
+MODEL_NAME   = os.getenv("MODEL_NAME",   "meta-llama/llama-3.3-70b-versatile")
 ENV_BASE_URL = os.getenv("ENV_BASE_URL", "http://localhost:7860")
 BENCHMARK    = "cascade-containment"
 
