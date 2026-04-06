@@ -80,7 +80,7 @@ The hard task exposes infection rates from **3 days ago**. The agent must learn 
 |----------|-----------|-------|-----------|----------|------------------------------------------|
 | `easy`   | 2         | 10    | 10        | None     | Single outbreak, clear signal            |
 | `medium` | 4         | 15    | 8         | None     | Two simultaneous outbreaks, forced triage|
-| `hard`   | 6         | 20    | 7         | 3 days   | Scarce resources, invisible acceleration |
+| `hard`   | 6         | 15    | 7         | 3 days   | Scarce resources, invisible acceleration |
 
 ---
 
