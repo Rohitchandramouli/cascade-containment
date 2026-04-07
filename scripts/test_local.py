@@ -225,7 +225,7 @@ def variance_analysis(greedy_results: dict):
         l     = GRPO_SCORES[task]["score"]
         delta = round(l - g, 4)
         lifts.append(delta)
-        signal = "Strong ✓" if delta > 0.30 else "Moderate" if delta > 0.10 else "Weak ⚠"
+        signal = "Strong ✓" if delta > 0.20 else "Moderate" if delta > 0.08 else "Weak ⚠"
         print(f"  {task:<10} {g:>12.4f} {l:>10.4f} {delta:>+10.4f} {signal:>10}")
 
     sep("─", 56)
@@ -235,10 +235,10 @@ def variance_analysis(greedy_results: dict):
     print(f"  {'Average':<10} {avg_g:>12.4f} {avg_l:>10.4f} {avg_lift:>+10.4f}")
     print()
 
-    exploitable = any(greedy_results[t]["score"] > 0.70 for t in ["easy","medium","hard"])
+    exploitable = any(greedy_results[t]["score"] > 0.60 for t in ["easy","medium","hard"])
     print(f"  Interpretation:")
     print(f"    Mean lift = {avg_lift:+.4f}  ({'Strong — environment meaningfully discriminates agent quality ✓' if avg_lift > 0.30 else 'Weak — review task difficulty ⚠'})")
-    print(f"    Exploit check: {'⚠ Greedy exceeds 0.70 on some task — review difficulty' if exploitable else '✓ No task trivially solvable by fixed-target allocation'}")
+    print(f"    Exploit check: {'⚠ Greedy exceeds 0.60 on some task — review difficulty' if exploitable else '✓ No task trivially solvable by fixed-target allocation'}")
     print()
     print("  Run-to-run variance (reproducibility across 5 runs):")
     for task in ["easy","medium","hard"]:

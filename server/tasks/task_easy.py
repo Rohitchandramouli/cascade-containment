@@ -22,7 +22,7 @@ class EasyTask(BaseTask):
         # With TREATMENT_REDUCTION=0.05 and good strategy, agent contains both
         # districts in 6-8 steps, earning a speed bonus. Requires sustained focus
         # on D0 first before D1 grows above safe threshold.
-        seed_infections = [0.50, 0.06]
+        seed_infections = [0.06, 0.50]
 
         return CityState(
             day                 = 0,
