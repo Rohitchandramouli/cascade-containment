@@ -13,7 +13,6 @@
 
 import sys
 import os
-import re
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from openenv.core.env_server import create_app
@@ -1113,7 +1112,7 @@ async function runValidation() {
 
     const container = document.getElementById('v-checks');
     container.innerHTML = Object.entries(d.checks).map(([key, val]) => {
-      label = re.sub("\\b\\w", lambda m: m.group(0).upper(), key.replace("_", " "))
+      const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
       const cls = val.pass ? 'pass' : 'fail';
       const icon = val.pass ? '✓' : '✗';
       return `<div class="check-item">
