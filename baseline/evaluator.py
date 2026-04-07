@@ -12,7 +12,11 @@ from core.reward import normalise_score
 from core.policy_update import compute_advantage, update_memory
 import requests as http_requests
 
-N_ROLLOUTS = 4
+N_ROLLOUTS = {
+    "easy":   2,   # Always solves cleanly in 1-2 rollouts, no variance to learn from
+    "medium": 4,   # Needs GRPO learning signal to stabilise
+    "hard":   4,   # Needs GRPO learning signal to stabilise
+}
 
 
 def build_prompt_with_memory(obs: CityObservation, memory: EpisodicMemory) -> str:
@@ -77,17 +81,19 @@ def run_task_grpo(
     env: Any, task_name: str, client: OpenAI,
     base_url: str, verbose: bool = True,
 ) -> float:
+    n = N_ROLLOUTS[task_name]
+
     if verbose:
-        print(f"\n  Task: {task_name.upper()} | {N_ROLLOUTS} rollouts")
+        print(f"\n  Task: {task_name.upper()} | {n} rollouts")
         print(f"  {'─'*44}")
 
     memory   = EpisodicMemory(max_size=20)
     rollouts = []
 
-    for i in range(N_ROLLOUTS):
+    for i in range(n):
         if verbose:
             label = "base prompt" if len(memory) == 0 else f"memory: {len(memory)} entries"
-            print(f"\n    Rollout {i+1}/{N_ROLLOUTS} [{label}]")
+            print(f"\n    Rollout {i+1}/{n} [{label}]")
 
         total_reward, steps, trajectory = run_rollout(
             env, task_name, client, memory, verbose
