@@ -30,9 +30,9 @@ from server.grader import grade_trajectory
 # Update these after each fresh baseline/run.py session.
 
 GRPO_SCORES = {
-    "easy":   {"score": 0.91, "containment": 1.00, "hospital": 1.00, "efficiency": 1.00},
-    "medium": {"score": 0.78, "containment": 0.58, "hospital": 0.98, "efficiency": 0.93},
-    "hard":   {"score": 0.62, "containment": 0.40, "hospital": 0.93, "efficiency": 0.57},
+    "easy":   {"score": 0.9083, "containment": 1.000, "hospital": 0.999, "efficiency": 0.857},
+    "medium": {"score": 0.7161, "containment": 0.423, "hospital": 0.976, "efficiency": 1.000},
+    "hard":   {"score": 0.6608, "containment": 0.513, "hospital": 0.971, "efficiency": 0.467},
 }
 
 
