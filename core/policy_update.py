@@ -51,7 +51,7 @@ def update_memory(
 
     stored = 0
     for step_data in trajectory:
-        if step_data["reward"] > 0:
+        if step_data["reward"] > -0.3:
             memory.store(step_data["obs"], step_data["action"], step_data["reward"])
             stored += 1
 
