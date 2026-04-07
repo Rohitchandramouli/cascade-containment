@@ -1112,7 +1112,7 @@ async function runValidation() {
 
     const container = document.getElementById('v-checks');
     container.innerHTML = Object.entries(d.checks).map(([key, val]) => {
-      const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      const label = key.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
       const cls = val.pass ? 'pass' : 'fail';
       const icon = val.pass ? '✓' : '✗';
       return `<div class="check-item">
