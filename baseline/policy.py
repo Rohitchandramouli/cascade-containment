@@ -142,7 +142,7 @@ def call_llm(prompt: str, client: OpenAI) -> str:
             },
             {"role": "user", "content": prompt}
         ],
-        max_tokens  = 120,   # increased to allow brief reasoning + JSON
+        max_tokens  = 60,   # increased to allow brief reasoning + JSON
         temperature = 0.1,
     )
     return (response.choices[0].message.content or "").strip()
