@@ -271,6 +271,8 @@ class EpidemicContainmentEnv(Environment):
                     1.0,
                     district.hospital_capacity_remaining + 0.02
                 )
+                if district.true_infection_rate < SAFE_THRESHOLD:
+                    district.restriction_active = False
 
     # ── Private: Reward Computation ───────────────────────────────────────────
 
@@ -283,7 +285,8 @@ class EpidemicContainmentEnv(Environment):
 
         # Term 1: Penalty for each district above danger threshold
         for district in districts_above_threshold(self._city.districts):
-            reward += REWARD_INFECTION_PENALTY
+            density_weight = max(0.5, district.population_density * len(self._city.districts))
+            reward += REWARD_INFECTION_PENALTY * min(2.0, density_weight)
 
         # Term 2: Heavy penalty for hospital capacity breach
         for district in self._city.districts:

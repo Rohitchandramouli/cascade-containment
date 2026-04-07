@@ -101,7 +101,7 @@ def compute_spread(districts: List[DistrictTruth]) -> List[float]:
       net_change = spread_rate - natural_recovery - intervention_reductions
       new_rate   = current + net_change + geographic_spillover
 
-    Natural recovery (NATURAL_RECOVERY_RATE = 0.02/day) reflects infected
+    Natural recovery (NATURAL_RECOVERY_RATE = 0.01/day) reflects infected
     individuals recovering without medical intervention. This means infection
     naturally decays slightly each day, but spread rate still dominates
     without active response — districts grow unless the agent acts.

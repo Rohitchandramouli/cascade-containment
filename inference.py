@@ -3,7 +3,7 @@
 # Hackathon evaluation entry point — Cascade Containment
 #
 # Emits structured stdout logs in the mandatory [START]/[STEP]/[END] format.
-# Runs 3 GRPO rollouts per task to demonstrate learning improvement.
+# Runs 4 GRPO rollouts per task to demonstrate learning improvement.
 # Runtime: ~10-12 minutes on 2vCPU/8GB RAM (well under 20-minute limit).
 #
 # Required environment variables:
@@ -148,7 +148,7 @@ def run_rollout(
     return total_reward, step, trajectory, score
 
 
-# ── Task runner: 3 GRPO rollouts with episodic memory ─────────────────────────
+# ── Task runner: 4 GRPO rollouts with episodic memory ─────────────────────────
 
 def run_task(env, task_name: str, client: OpenAI) -> float:
     memory   = EpisodicMemory(max_size=20)
