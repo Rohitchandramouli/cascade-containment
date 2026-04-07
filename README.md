@@ -192,8 +192,8 @@ The grader is **fully deterministic** — no randomness, no LLM calls. Identical
 
 | Component | Weight | Measures |
 | --- | --- | --- |
-| **Containment score** | 30% | Fraction of district-days below infection threshold (grace period: first 2 steps excluded) |
-| **Hospital score** | 45% | Average capacity preserved; ×0.6 multiplier if any district collapsed |
+| **Containment score** | 45% | Fraction of district-days below infection threshold (grace period: first 2 steps excluded) |
+| **Hospital score** | 30% | Average capacity preserved; ×0.6 multiplier if any district collapsed |
 | **Efficiency score** | 15% | Fraction of resource actions targeting the highest-infected district (uses pre-action state) |
 | **Speed score** | 10% | `1 − (steps / max_steps)` if episode ends before max steps; else 0 |
 
