@@ -920,44 +920,39 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
         <div style="font-size:0.82rem;font-weight:700;color:#fff;">Score Variance Check</div>
       </div>
       <div style="font-size:0.72rem;color:var(--muted);margin-bottom:1rem;line-height:1.7;">
-        A well-designed environment must show <strong style="color:var(--text);">meaningful discrimination</strong> between agent types.
-        If a greedy agent can score as well as an LLM, the tasks are too easy. If the LLM scores the same as greedy, the tasks are too hard.
-        The lift (Δ) should be large and consistent across all tasks.
+        Compares the greedy baseline (always allocates to D0, ignores all data) against the LLM+GRPO agent.
+        A well-designed environment must show a large, consistent lift across all tasks — confirming that
+        intelligent resource allocation is required and cannot be gamed by fixed-target strategies.
       </div>
 
-      <!-- Variance table -->
       <div class="card-sm" style="margin-bottom:1rem;">
-        <div class="card-title">Agent Comparison — Greedy vs LLM+GRPO</div>
+        <div class="card-title">Greedy (D0) vs LLM+GRPO — Score Comparison</div>
         <table class="table">
-          <tr><th>Task</th><th>Greedy Score</th><th>LLM+GRPO Score</th><th>Lift (Δ)</th><th>Signal</th><th>Exploit Risk</th></tr>
+          <tr><th>Task</th><th>Greedy Baseline</th><th>LLM+GRPO</th><th>Lift (Δ)</th><th>Signal</th><th>Exploit Risk</th></tr>
           <tr>
             <td><span class="badge badge-green">Easy</span></td>
-            <td style="color:var(--muted);">~50%</td>
-            <td><strong>91%</strong></td>
+            <td style="color:var(--muted);">~50%</td><td><strong>91%</strong></td>
             <td class="pos">+41pp</td>
             <td><span class="badge badge-green">Strong</span></td>
-            <td><span class="badge badge-green">None — greedy ≪ 70%</span></td>
+            <td><span class="badge badge-green">None — greedy well below 70%</span></td>
           </tr>
           <tr>
             <td><span class="badge badge-amber">Medium</span></td>
-            <td style="color:var(--muted);">~23%</td>
-            <td><strong>78%</strong></td>
+            <td style="color:var(--muted);">~23%</td><td><strong>78%</strong></td>
             <td class="pos">+55pp</td>
             <td><span class="badge badge-green">Strong</span></td>
-            <td><span class="badge badge-green">None — greedy ≪ 70%</span></td>
+            <td><span class="badge badge-green">None — greedy well below 70%</span></td>
           </tr>
           <tr>
             <td><span class="badge badge-red">Hard</span></td>
-            <td style="color:var(--muted);">~21%</td>
-            <td><strong>62%</strong></td>
+            <td style="color:var(--muted);">~21%</td><td><strong>62%</strong></td>
             <td class="pos">+41pp</td>
             <td><span class="badge badge-green">Strong</span></td>
-            <td><span class="badge badge-green">None — greedy ≪ 70%</span></td>
+            <td><span class="badge badge-green">None — greedy well below 70%</span></td>
           </tr>
           <tr style="border-top:1px solid var(--border2);">
             <td><strong>Average</strong></td>
-            <td style="color:var(--muted);">~31%</td>
-            <td><strong>77%</strong></td>
+            <td style="color:var(--muted);">~31%</td><td><strong>77%</strong></td>
             <td class="pos"><strong>+46pp</strong></td>
             <td><span class="badge badge-green">Strong</span></td>
             <td><span class="badge badge-green">No exploits found</span></td>
@@ -965,56 +960,37 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
         </table>
       </div>
 
-      <!-- Visual variance bars -->
-      <div class="grid-3">
+      <div class="grid-3" style="margin-bottom:1rem;">
         <div class="card-sm">
-          <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Easy — Score Distribution</div>
-          <div style="display:flex;flex-direction:column;gap:0.5rem;">
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.25rem;"><span style="color:var(--muted);">Greedy</span><span>50%</span></div>
-              <div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:50%;background:var(--muted);"></div></div>
-            </div>
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.25rem;"><span style="color:var(--green);">LLM+GRPO</span><span>91%</span></div>
-              <div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:91%;background:var(--green);"></div></div>
-            </div>
-            <div style="font-size:0.68rem;color:var(--muted);padding-top:0.25rem;">Δ = <span style="color:var(--green);font-weight:700;">+41pp</span> lift</div>
+          <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Easy</div>
+          <div style="display:flex;flex-direction:column;gap:0.45rem;">
+            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--muted);">Greedy (D0)</span><span>50%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:50%;background:var(--dim);"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--green);">LLM+GRPO</span><span>91%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:91%;background:var(--green);"></div></div></div>
+            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--green);font-weight:700;">+41pp</span></div>
           </div>
         </div>
         <div class="card-sm">
-          <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Medium — Score Distribution</div>
-          <div style="display:flex;flex-direction:column;gap:0.5rem;">
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.25rem;"><span style="color:var(--muted);">Greedy</span><span>23%</span></div>
-              <div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:23%;background:var(--muted);"></div></div>
-            </div>
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.25rem;"><span style="color:var(--amber);">LLM+GRPO</span><span>78%</span></div>
-              <div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:78%;background:var(--amber);"></div></div>
-            </div>
-            <div style="font-size:0.68rem;color:var(--muted);padding-top:0.25rem;">Δ = <span style="color:var(--amber);font-weight:700;">+55pp</span> lift</div>
+          <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Medium</div>
+          <div style="display:flex;flex-direction:column;gap:0.45rem;">
+            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--muted);">Greedy (D0)</span><span>23%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:23%;background:var(--dim);"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--amber);">LLM+GRPO</span><span>78%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:78%;background:var(--amber);"></div></div></div>
+            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--amber);font-weight:700;">+55pp</span></div>
           </div>
         </div>
         <div class="card-sm">
-          <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Hard — Score Distribution</div>
-          <div style="display:flex;flex-direction:column;gap:0.5rem;">
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.25rem;"><span style="color:var(--muted);">Greedy</span><span>21%</span></div>
-              <div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:21%;background:var(--muted);"></div></div>
-            </div>
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.25rem;"><span style="color:var(--red);">LLM+GRPO</span><span>62%</span></div>
-              <div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:62%;background:var(--red);"></div></div>
-            </div>
-            <div style="font-size:0.68rem;color:var(--muted);padding-top:0.25rem;">Δ = <span style="color:var(--red);font-weight:700;">+41pp</span> lift</div>
+          <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Hard</div>
+          <div style="display:flex;flex-direction:column;gap:0.45rem;">
+            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--muted);">Greedy (D0)</span><span>21%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:21%;background:var(--dim);"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--red);">LLM+GRPO</span><span>62%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:62%;background:var(--red);"></div></div></div>
+            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--red);font-weight:700;">+41pp</span></div>
           </div>
         </div>
       </div>
 
-      <div style="margin-top:1rem;padding:0.75rem 1rem;background:var(--green-dim);border:1px solid rgba(61,214,140,0.2);border-radius:8px;font-size:0.72rem;color:var(--text);line-height:1.7;">
-        ✓ <strong>Variance check passed.</strong> Mean lift of +46pp across all tasks confirms the environment discriminates meaningfully between
-        greedy and intelligent agents. No task is trivially solvable (greedy max ≈ 50%). No task is intractable (LLM+GRPO achieves 62–91%).
-        The spread from 62% to 91% across difficulty levels demonstrates appropriate task calibration.
+      <div style="padding:0.85rem 1.1rem;background:var(--green-dim);border:1px solid rgba(61,214,140,0.2);border-radius:8px;font-size:0.72rem;color:var(--text);line-height:1.8;">
+        ✓ <strong>Variance check passed.</strong> Mean lift of <strong>+46pp</strong> across all tasks confirms the
+        environment meaningfully discriminates between fixed-target and intelligent resource allocation. The greedy
+        baseline scores 21–50% — no trivial exploit path. LLM+GRPO reaches 62–91% — genuine triage reasoning is rewarded.
       </div>
     </div>
 
