@@ -36,8 +36,8 @@ MODEL_NAME   = os.getenv("MODEL_NAME",   "meta-llama/llama-3.1-8b-instant")
 ENV_BASE_URL = os.getenv("ENV_BASE_URL", "http://localhost:7860")
 BENCHMARK    = "cascade-containment"
 
-# 3 rollouts keeps runtime under 20 minutes
-N_ROLLOUTS = 3
+# 4 rollouts keeps runtime under 20 minutes
+N_ROLLOUTS = 4
 
 
 # ── Structured Log Functions (mandatory format) ───────────────────────────────

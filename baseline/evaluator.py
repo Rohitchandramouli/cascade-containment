@@ -12,7 +12,7 @@ from core.reward import normalise_score
 from core.policy_update import compute_advantage, update_memory
 import requests as http_requests
 
-N_ROLLOUTS = 3
+N_ROLLOUTS = 4
 
 
 def build_prompt_with_memory(obs: CityObservation, memory: EpisodicMemory) -> str:
