@@ -1,5 +1,3 @@
-# Dumb Greedy Baseline Validation
-
   CASCADE CONTAINMENT — LOCAL VALIDATION
   2026-04-07 23:50:10
 

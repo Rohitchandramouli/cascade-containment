@@ -1,6 +1,7 @@
-# CASCADE CONTAINMENT — GRPO EVALUATION
-
-Rollouts per task:  {'easy': 3, 'medium': 4, 'hard': 4}
+====================================================
+  CASCADE CONTAINMENT — GRPO EVALUATION
+====================================================
+  Rollouts per task:  {'easy': 3, 'medium': 4, 'hard': 4}
   Learning:           Episodic memory + advantage gating
 
   Task: EASY | 3 rollouts
@@ -235,11 +236,13 @@ Rollouts per task:  {'easy': 3, 'medium': 4, 'hard': 4}
 
   ✓ HARD final score: 0.6608
 
-## FINAL SCORES
-
-Easy:    0.9083
-Medium:  0.7161
-Hard:    0.6608
-────────────────────────────────
-Average: 0.7617
-Time:    1186.2s
+====================================================
+  FINAL SCORES
+====================================================
+  Easy:    0.9083
+  Medium:  0.7161
+  Hard:    0.6608
+  ────────────────────────────────
+  Average: 0.7617
+  Time:    1186.2s
+====================================================
