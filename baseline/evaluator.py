@@ -13,7 +13,7 @@ from core.policy_update import compute_advantage, update_memory
 import requests as http_requests
 
 N_ROLLOUTS = {
-    "easy":   2,   # Always solves cleanly in 1-2 rollouts, no variance to learn from
+    "easy":   3,   # Always solves cleanly in 1-2 rollouts, no variance to learn from
     "medium": 4,   # Needs GRPO learning signal to stabilise
     "hard":   4,   # Needs GRPO learning signal to stabilise
 }
