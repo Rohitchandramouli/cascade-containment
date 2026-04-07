@@ -1,0 +1,99 @@
+# Dumb Greedy Baseline Validation
+
+  CASCADE CONTAINMENT — LOCAL VALIDATION
+  2026-04-07 23:50:10
+
+════════════════════════════════════════════════════════
+  PHASE 1 — SPEC COMPLIANCE CHECKS
+════════════════════════════════════════════════════════
+
+  ✓ Env Instantiates               EpidemicContainmentEnv()
+  ✓ Reset Easy                     2 districts, 10 steps
+  ✓ Reset Medium                   4 districts, 15 steps
+  ✓ Reset Hard                     6 districts, 15 steps
+  ✓ Step Works                     reward=-0.0599, done=False
+  ✓ State Property                 episode_id=c94b64a9, step_count=0
+  ✓ Grader Range                   final_score=0.5573
+  ✓ Invalid Action                 Gracefully defaulted: Invalid action_type 'invalid'. Defaulted to alloca
+  ✓ Difficulty Progression         easy=2d, medium=4d, hard=6d
+  ✓ Grader Deterministic           Scoring logic is pure — no internal randomness
+
+────────────────────────────────────────────────────────
+  Phase 1 result: ALL PASSED
+────────────────────────────────────────────────────────
+
+════════════════════════════════════════════════════════
+  PHASE 2 — GREEDY BASELINE BENCHMARK  (5 runs / task)
+════════════════════════════════════════════════════════
+
+  Task: EASY
+────────────────────────────────────────────
+    Score:       0.4276  (σ=0.0721, range [0.3602–0.5163])
+    Containment: 0.5000
+    Hospital:    0.6079
+    Efficiency:  0.0000
+    Breach rate: 60%   (0.0s)
+
+  Task: MEDIUM
+────────────────────────────────────────────
+    Score:       0.4271  (σ=0.0586, range [0.3648–0.5245])
+    Containment: 0.4502
+    Hospital:    0.5933
+    Efficiency:  0.0783
+    Breach rate: 80%   (0.0s)
+
+  Task: HARD
+────────────────────────────────────────────
+    Score:       0.3299  (σ=0.0195, range [0.3037–0.3626])
+    Containment: 0.2959
+    Hospital:    0.5033
+    Efficiency:  0.0000
+    Breach rate: 100%   (0.1s)
+
+════════════════════════════════════════════════════════
+  PHASE 2 — SCORE VARIANCE CHECK
+════════════════════════════════════════════════════════
+
+  Task        Greedy (D0)   LLM+GRPO   Δ (lift)     Signal
+────────────────────────────────────────────────────────
+  easy             0.4276     0.9083    +0.4807   Strong ✓
+  medium           0.4271     0.7161    +0.2890   Strong ✓
+  hard             0.3299     0.6608    +0.3309   Strong ✓
+────────────────────────────────────────────────────────
+  Average          0.3949     0.7617    +0.3669
+
+  Interpretation:
+    Mean lift = +0.3669  (Strong — environment meaningfully discriminates agent quality ✓)
+    Exploit check: ✓ No task trivially solvable by fixed-target allocation
+
+  Run-to-run variance (reproducibility across 5 runs):
+    easy     σ=0.0721  min=0.3602  max=0.5163
+    medium   σ=0.0586  min=0.3648  max=0.5245
+    hard     σ=0.0195  min=0.3037  max=0.3626
+
+════════════════════════════════════════════════════════
+  APP.PY BENCHMARK TABLE — paste these into Phase 2 tab after each run
+════════════════════════════════════════════════════════
+
+  Greedy baseline (always D0):
+    EASY     score=0.43  cont=0.50  hosp=0.61  eff=0.00  breach=60%
+    MEDIUM   score=0.43  cont=0.45  hosp=0.59  eff=0.08  breach=80%
+    HARD     score=0.33  cont=0.30  hosp=0.50  eff=0.00  breach=100%
+
+  LLM+GRPO (update GRPO_SCORES dict above after each baseline/run.py session):
+    EASY     score=0.91  cont=1.00  hosp=1.00  eff=0.86
+    MEDIUM   score=0.72  cont=0.42  hosp=0.98  eff=1.00
+    HARD     score=0.66  cont=0.51  hosp=0.97  eff=0.47
+
+════════════════════════════════════════════════════════
+  MECHANIC CHECKS
+════════════════════════════════════════════════════════
+
+  ✓ Restriction auto-lift: active restrictions cleared when safe
+  ✓ Hospital breach terminates episode: confirmed
+  ✓ Hard task 3-day infection history: pre-populated
+  ✓ Resource replenishment: confirmed (+1/step)
+
+════════════════════════════════════════════════════════
+  ✓ ALL PHASE 1 CHECKS PASSED
+════════════════════════════════════════════════════════
