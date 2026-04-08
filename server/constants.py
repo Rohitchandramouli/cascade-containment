@@ -8,7 +8,10 @@ TASK_CONFIG = {
 }
 
 INFECTION_THRESHOLD   = 0.40   # above this → district is in the danger zone
-SAFE_THRESHOLD        = 0.20   # below this → district is considered contained
+SAFE_THRESHOLD        = 0.20   # below this → district is considered contained (grader + terminal check)
+# LOW_THRESHOLD and SAFE_THRESHOLD are intentionally separate even though both equal 0.20.
+# SAFE_THRESHOLD is a containment concept; LOW_THRESHOLD is a restriction-penalty concept.
+# Keeping them separate means they can diverge independently if the design changes.
 LOW_THRESHOLD         = 0.20   # restricting below this threshold earns a penalty
 # real ICU overflow and triage failure kick in well before zero capacity
 HOSPITAL_BREACH_POINT = 0.10

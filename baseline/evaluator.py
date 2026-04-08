@@ -5,7 +5,7 @@ from openai import OpenAI
 
 from client import CascadeContainmentEnv
 from models import ContainmentAction, CityObservation
-from baseline.policy import get_client, build_prompt, call_llm, parse_action
+from baseline.policy import get_client, build_prompt, call_llm, parse_action, build_prompt_with_memory
 from core.trajectory import EpisodicMemory
 from core.reward import normalise_score
 from core.policy_update import compute_advantage, update_memory
@@ -16,15 +16,6 @@ N_ROLLOUTS = {
     "medium": 4,
     "hard":   4,
 }
-
-
-def build_prompt_with_memory(obs: CityObservation, memory: EpisodicMemory) -> str:
-    base         = build_prompt(obs)
-    memory_block = memory.retrieve(obs)
-    if not memory_block:
-        return base
-    injection = "\n" + memory_block + "\nApply these lessons to your current decision.\n"
-    return base.replace("Your response:", injection + "Your response:")
 
 
 def run_rollout(

@@ -10,9 +10,10 @@ import requests as http_requests
 
 from client import CascadeContainmentEnv
 from models import ContainmentAction
-from baseline.policy import get_client, build_prompt, call_llm, parse_action
+from baseline.policy import get_client, build_prompt, call_llm, parse_action, build_prompt_with_memory
 from core.trajectory import EpisodicMemory
 from core.policy_update import compute_advantage, update_memory
+from core.reward import normalise_score
 
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 MODEL_NAME   = os.getenv("MODEL_NAME",   "meta-llama/Llama-3.1-8B-Instruct")
@@ -46,15 +47,6 @@ def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> No
         f"rewards={','.join(f'{r:.2f}' for r in rewards)}",
         flush=True,
     )
-
-
-def build_prompt_with_memory(obs, memory: EpisodicMemory) -> str:
-    base         = build_prompt(obs)
-    memory_block = memory.retrieve(obs)
-    if not memory_block:
-        return base
-    injection = "\n" + memory_block + "\nApply these lessons to your current decision.\n"
-    return base.replace("Your response:", injection + "Your response:")
 
 
 def run_rollout(
@@ -108,7 +100,8 @@ def run_rollout(
             if grade_resp.status_code == 200:
                 score = grade_resp.json().get("final_score", 0.0)
         except Exception:
-            score = max(0.0, min(1.0, (total_reward + 5) / 15))
+            num_districts = {"easy": 2, "medium": 4, "hard": 6}.get(task_name, 2)
+            score = normalise_score(total_reward, step, num_districts)
 
         success = score >= 0.40
 

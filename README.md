@@ -147,11 +147,11 @@ new_infection = current + (spread_rate − natural_recovery − intervention) + 
 | --- | --- | --- | --- | --- | --- |
 | **easy** | 2 | 10 | 10 | None | Single outbreak; D1 starts infected, D0 is clean |
 | **medium** | 4 | 15 | 8 | None | Two simultaneous outbreaks; forced triage between competing threats |
-| **hard** | 6 | 15 | 7 | **3 days** | Six growing outbreaks; invisible acceleration; scarce resources |
+| **hard** | 6 | 15 | 7 | **3 days** | Six seeded infections (only D2 and D4 above safe threshold); 3-day data lag; scarce resources |
 
 **Easy** — D1 starts at 0.50 infection, D0 is clean. The agent must observe and target the correct district. A fixed-target agent ignoring observations scores ~43% and breaches hospitals 60% of the time.
 
-**Medium** — D0 and D2 start in the danger zone; D1 and D3 grow into crisis within 4–6 steps. With 8 resources across 4 districts over 15 steps, genuine triage is required.
+**Medium** — D0 starts above the infection threshold (0.42); D2 is in the warning zone (0.38, below the 0.40 threshold). D1 and D3 start low but grow into crisis within 4–6 steps via spillover. With 8 resources across 4 districts over 15 steps, genuine triage is required.
 
 **Hard** — 3-day information lag means the agent sees infection rates from 3 days ago. The `growth_rate_hint` provides a noisy signal to estimate current state. Structural uncertainty — not testable around.
 
@@ -179,7 +179,7 @@ Fully deterministic — no randomness, no LLM calls. Identical trajectories alwa
 | --- | --- | --- |
 | **Hospital score** | 45% | Average capacity preserved; ×0.6 multiplier if any district collapsed |
 | **Containment score** | 30% | Fraction of district-days below infection threshold (first 2 steps excluded) |
-| **Efficiency score** | 15% | Fraction of resource actions targeting highest-infected district (uses pre-action state) |
+| **Efficiency score** | 15% | Fraction of resource actions targeting highest-infected district (grader uses pre-action state to avoid penalising successful treatments) |
 | **Speed score** | 10% | `1 − (steps / max_steps)` if episode ends early; else 0 |
 
 Hospital is weighted highest because system capacity preservation is the primary operational constraint in real outbreak response — a functioning healthcare system is the prerequisite for everything else.
@@ -309,7 +309,7 @@ python baseline/run.py
 ### Docker
 
 ```bash
-docker build -f server/Dockerfile -t cascade-containment .
+docker build -t cascade-containment .
 docker run -p 7860:7860 cascade-containment
 ```
 

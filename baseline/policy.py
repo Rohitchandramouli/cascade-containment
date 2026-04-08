@@ -13,6 +13,11 @@ def get_client() -> OpenAI:
 
 def build_prompt(obs: CityObservation) -> str:
     num_districts = len(obs.districts)
+    # Infers data lag from district count because CityObservation does not expose
+    # data_lag_days directly. This works because hard (6 districts) is currently the
+    # only task with a data lag. If a new task is added with 6 districts and no lag,
+    # or a lag task with fewer districts, this will silently misbehave.
+    # Fix: expose data_lag_days in CityObservation and read it directly.
     has_data_lag  = num_districts == 6
 
     sorted_districts = sorted(
@@ -169,3 +174,17 @@ def get_action(obs: CityObservation, client: OpenAI) -> ContainmentAction:
     prompt   = build_prompt(obs)
     response = call_llm(prompt, client)
     return parse_action(response, len(obs.districts))
+
+
+def build_prompt_with_memory(obs: CityObservation, memory) -> str:
+    """
+    Builds the LLM prompt augmented with relevant past decisions from episodic memory.
+    Injects memory block just before the 'Your response:' line so the model sees
+    prior high-reward decisions as concrete examples before making its choice.
+    """
+    base         = build_prompt(obs)
+    memory_block = memory.retrieve(obs)
+    if not memory_block:
+        return base
+    injection = "\n" + memory_block + "\nApply these lessons to your current decision.\n"
+    return base.replace("Your response:", injection + "Your response:")
