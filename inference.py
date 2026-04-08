@@ -3,11 +3,11 @@
 # Hackathon evaluation entry point — Cascade Containment
 #
 # Emits structured stdout logs in the mandatory [START]/[STEP]/[END] format.
-# Runs 4 GRPO rollouts per task to demonstrate learning improvement.
-# Runtime: ~10-12 minutes on 2vCPU/8GB RAM (well under 20-minute limit).
+# Runs per-task GRPO rollouts (easy=3, medium=4, hard=4) with episodic memory.
+# Runtime: ~18-20 minutes on 2vCPU/8GB RAM.
 #
 # Required environment variables:
-#   API_BASE_URL   — LLM API endpoint
+#   API_BASE_URL   — LLM API endpoint (default: HuggingFace router)
 #   MODEL_NAME     — Model identifier for inference
 #   HF_TOKEN       — Hugging Face / API key
 #   ENV_BASE_URL   — Running environment server (default: localhost:7860)
@@ -32,12 +32,16 @@ from core.policy_update import compute_advantage, update_memory
 # ── Configuration ─────────────────────────────────────────────────────────────
 
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
-MODEL_NAME   = os.getenv("MODEL_NAME",   "meta-llama/llama-3.1-8b-instant")
+MODEL_NAME   = os.getenv("MODEL_NAME",   "meta-llama/Llama-3.1-8B-Instruct")
 ENV_BASE_URL = os.getenv("ENV_BASE_URL", "http://localhost:7860")
 BENCHMARK    = "cascade-containment"
 
-# 4 rollouts keeps runtime under 20 minutes
-N_ROLLOUTS = 4
+# Per-task rollout counts — matches baseline/evaluator.py
+N_ROLLOUTS = {
+    "easy":   3,   # Solves cleanly in 1-2 rollouts; 3 gives stable best-of
+    "medium": 4,   # Needs GRPO memory to stabilise triage decisions
+    "hard":   4,   # Needs GRPO memory to handle 3-day lag uncertainty
+}
 
 
 # ── Structured Log Functions (mandatory format) ───────────────────────────────
@@ -128,7 +132,7 @@ def run_rollout(
             if done:
                 break
 
-        # Get grader score
+        # Fetch grader score from /grade endpoint
         score = 0.0
         try:
             grade_resp = http_requests.get(ENV_BASE_URL.rstrip('/') + '/grade', timeout=10)
@@ -136,11 +140,12 @@ def run_rollout(
                 data  = grade_resp.json()
                 score = data.get("final_score", 0.0)
         except Exception:
-            score = max(0.0, min(1.0, (total_reward + 5) / 15))  # fallback normalisation
+            # Fallback: normalise cumulative reward to [0, 1]
+            score = max(0.0, min(1.0, (total_reward + 5) / 15))
 
-        success = score >= 0.40  # meaningful containment threshold
+        success = score >= 0.40
 
-    except Exception as e:
+    except Exception:
         log_end(success=False, steps=step, score=0.0, rewards=rewards)
         return total_reward, step, trajectory, 0.0
 
@@ -148,30 +153,31 @@ def run_rollout(
     return total_reward, step, trajectory, score
 
 
-# ── Task runner: 4 GRPO rollouts with episodic memory ─────────────────────────
+# ── Task runner: GRPO rollouts with episodic memory ───────────────────────────
 
 def run_task(env, task_name: str, client: OpenAI) -> float:
-    memory   = EpisodicMemory(max_size=20)
-    rollouts = []
+    """Run N rollouts for a task, improving the prompt via GRPO episodic memory."""
+    n_rollouts = N_ROLLOUTS[task_name]
+    memory     = EpisodicMemory(max_size=20)
+    rollouts   = []
 
-    for i in range(1, N_ROLLOUTS + 1):
+    for i in range(1, n_rollouts + 1):
         total_reward, steps, trajectory, score = run_rollout(
             env, task_name, client, memory, rollout_idx=i
         )
         rollouts.append((total_reward, steps, score))
 
-        # GRPO advantage: store positive steps from above-average rollouts
+        # GRPO advantage-gated memory update
         completed_rewards = [r[0] for r in rollouts]
         advantage         = compute_advantage(total_reward, completed_rewards[:-1])
         update_memory(memory, trajectory, advantage)
 
-    best_score = max(r[2] for r in rollouts)
-    return best_score
+    return max(r[2] for r in rollouts)
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
-def main():
+def main() -> dict:
     client = get_client()
     scores = {}
     start  = time.time()
@@ -191,10 +197,14 @@ def main():
 
     elapsed = round(time.time() - start, 1)
 
-    # Human-readable summary (additional to structured logs)
-    print(f"\n# SCORES easy={scores.get('easy',0):.4f} medium={scores.get('medium',0):.4f} "
-          f"hard={scores.get('hard',0):.4f} average={scores.get('average',0):.4f} "
-          f"elapsed={elapsed}s", flush=True)
+    print(
+        f"\n# SCORES easy={scores.get('easy', 0):.4f} "
+        f"medium={scores.get('medium', 0):.4f} "
+        f"hard={scores.get('hard', 0):.4f} "
+        f"average={scores.get('average', 0):.4f} "
+        f"elapsed={elapsed}s",
+        flush=True,
+    )
 
     return scores
 
@@ -203,7 +213,7 @@ if __name__ == "__main__":
     scores = main()
 
     if scores.get("average", 0.0) == 0.0:
-        print("\n[DEBUG] All scores zero. Check:", flush=True)
+        print("\n[DEBUG] All scores zero — check environment variables:", flush=True)
         print(f"  ENV_BASE_URL = {ENV_BASE_URL}", flush=True)
         print(f"  API_BASE_URL = {API_BASE_URL}", flush=True)
         print(f"  MODEL_NAME   = {MODEL_NAME}", flush=True)

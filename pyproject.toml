@@ -1,3 +1,21 @@
 [project]
 name = "cascade-containment"
 version = "1.0.0"
+description = "RL benchmark for epidemic containment policy under uncertainty"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    "pydantic>=2.0.0",
+    "openenv-core>=0.2.0",
+    "openai>=1.0.0",
+    "python-dotenv>=0.19.0",
+    "requests>=2.25.0",
+]
+
+[project.scripts]
+serve = "server.app:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

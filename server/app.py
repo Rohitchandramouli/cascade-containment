@@ -1237,3 +1237,23 @@ async function runValidation() {
 </script>
 </body>
 </html>"""
+
+
+# ── Server Entry Point ────────────────────────────────────────────────────────
+
+def main() -> None:
+    """
+    Entry point for `uv run serve` and `python -m server.app`.
+    Starts the uvicorn server on 0.0.0.0:7860.
+    """
+    import uvicorn
+    uvicorn.run(
+        "server.app:app",
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", "7860")),
+        reload=False,
+    )
+
+
+if __name__ == "__main__":
+    main()
