@@ -242,14 +242,13 @@ cascade-containment/
 ├── models.py                 # Typed data contracts: Action, Observation, State
 ├── client.py                 # OpenEnv client interface
 ├── openenv.yaml              # Environment manifest for OpenEnv registry
-│
+├── Dockerfile                # Container definition
 ├── server/
 │   ├── app.py                # FastAPI server + judge dashboard + /grade /info /demo /validate endpoints
 │   ├── environment.py        # Core RL loop (reset/step/state OpenEnv interface)
 │   ├── grader.py             # Deterministic trajectory scorer — no LLM calls
 │   ├── constants.py          # Single source of truth for all numeric configuration
 │   ├── utils.py              # Spread computation, observation builder, helper functions
-│   ├── Dockerfile            # Container definition
 │   └── tasks/
 │       ├── task_easy.py      # 2 districts, 10 steps, real-time data (D1 seeded)
 │       ├── task_medium.py    # 4 districts, 15 steps, forced triage
