@@ -203,7 +203,7 @@ Rollout 2: Memory-augmented prompt
   compute advantage = R2 - mean([R1])
   reinforce if advantage > -0.5
 
-... repeat for N rollouts (easy=3, medium=4, hard=4)
+... repeat for N rollouts (easy=2, medium=4, hard=4)
 Report best grader score across all rollouts
 ```
 
@@ -257,7 +257,7 @@ cascade-containment/
 │
 ├── baseline/
 │   ├── policy.py             # LLM policy with chain-of-thought prompting
-│   ├── evaluator.py          # GRPO episodic memory loop (easy=3, medium=4, hard=4 rollouts)
+│   ├── evaluator.py          # GRPO episodic memory loop (easy=2, medium=4, hard=4 rollouts)
 │   └── run.py                # CLI entry point
 │
 ├── scripts/

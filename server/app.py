@@ -525,7 +525,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
     <div class="brand-icon">🦠</div>
     <div>
       <div class="brand-name">Cascade Containment</div>
-      <div class="brand-sub">OpenEnv Benchmark &middot; Meta PyTorch Hackathon × SST 2026 &middot; LLM avg 76.2%</div>
+      <div class="brand-sub">OpenEnv Benchmark &middot; Meta PyTorch Hackathon &times; SST 2026 &middot; LLM avg 75.7%</div>
     </div>
   </div>
   <div class="header-right">
@@ -568,8 +568,8 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
     </div>
     <div class="hero-stats">
       <div class="hs-item"><div class="hs-val">3</div><div class="hs-label">Task levels</div></div>
-      <div class="hs-item"><div class="hs-val">76.2%</div><div class="hs-label">LLM+GRPO avg</div></div>
-      <div class="hs-item"><div class="hs-val">+37pp</div><div class="hs-label">vs greedy</div></div>
+      <div class="hs-item"><div class="hs-val">75.7%</div><div class="hs-label">LLM+GRPO avg</div></div>
+      <div class="hs-item"><div class="hs-val">+36pp</div><div class="hs-label">vs greedy</div></div>
     </div>
   </div>
 
@@ -763,25 +763,25 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
         <div style="font-size:0.82rem;font-weight:700;color:#fff;">LLM + GRPO Agent (Llama 3.3 70B)</div>
       </div>
       <div style="font-size:0.72rem;color:var(--muted);margin-bottom:1rem;line-height:1.7;">
-        Llama 3.3 70B via Groq, with GRPO-style episodic memory across 3&ndash;4 rollouts per task.
+        Llama 3.3 70B via Groq, with GRPO-style episodic memory across 2&ndash;4 rollouts per task.
         Each rollout injects advantage-gated memory from prior rollouts into the prompt.
         Reproduced by running <code style="color:var(--text);">python baseline/run.py</code>.
         Total runtime: <strong style="color:var(--text);">19.8 minutes</strong>.
       </div>
       <div class="grid-3" style="margin-bottom:1rem;">
         <div class="card-sm" style="border-top:2px solid var(--green);">
-          <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--green);margin-bottom:0.5rem;">Easy &middot; 3 rollouts</div>
-          <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">90.8%</div>
-          <div style="font-size:0.68rem;color:var(--muted);margin-top:0.25rem;">Best of 3 &middot; no breach</div>
+          <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--green);margin-bottom:0.5rem;">Easy &middot; 2 rollouts</div>
+          <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">88.5%</div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-top:0.25rem;">Best of 2 &middot; no breach</div>
           <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.3rem;">
             <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Containment</span><span>100%</span></div>
             <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Hospital</span><span>100%</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Efficiency</span><span>86%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Efficiency</span><span>90%</span></div>
           </div>
         </div>
         <div class="card-sm" style="border-top:2px solid var(--amber);">
           <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--amber);margin-bottom:0.5rem;">Medium &middot; 4 rollouts</div>
-          <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">71.6%</div>
+          <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">75.4%</div>
           <div style="font-size:0.68rem;color:var(--muted);margin-top:0.25rem;">Best of 4 &middot; no breach</div>
           <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.3rem;">
             <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Containment</span><span>42%</span></div>
@@ -791,7 +791,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
         </div>
         <div class="card-sm" style="border-top:2px solid var(--red);">
           <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--red);margin-bottom:0.5rem;">Hard &middot; 4 rollouts</div>
-          <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">66.1%</div>
+          <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">63.1%</div>
           <div style="font-size:0.68rem;color:var(--muted);margin-top:0.25rem;">Best of 4 &middot; no breach</div>
           <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.3rem;">
             <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Containment</span><span>51%</span></div>
@@ -806,18 +806,18 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
           <tr><th>Task</th><th>Rollout 1</th><th>Rollout 2</th><th>Rollout 3</th><th>Rollout 4</th><th>Best</th></tr>
           <tr>
             <td><span class="badge badge-green">Easy</span></td>
-            <td>90.8%</td><td>85.5%</td><td>90.0%</td><td>&mdash;</td>
-            <td><strong style="color:var(--green);">90.8%</strong></td>
+            <td>88.5%</td><td>83.2%</td><td>&mdash;</td><td>&mdash;</td>
+            <td><strong style="color:var(--green);">88.5%</strong></td>
           </tr>
           <tr>
             <td><span class="badge badge-amber">Medium</span></td>
-            <td>58.0%</td><td>65.4%</td><td>71.6%</td><td>65.5%</td>
-            <td><strong style="color:var(--amber);">71.6%</strong></td>
+            <td>59.6%</td><td>66.2%</td><td>75.4%</td><td>53.7%</td>
+            <td><strong style="color:var(--amber);">75.4%</strong></td>
           </tr>
           <tr>
             <td><span class="badge badge-red">Hard</span></td>
-            <td>59.0%</td><td>58.4%</td><td>66.1%</td><td>64.0%</td>
-            <td><strong style="color:var(--red);">66.1%</strong></td>
+            <td>63.1%</td><td>53.9%</td><td>59.0%</td><td>63.0%</td>
+            <td><strong style="color:var(--red);">63.1%</strong></td>
           </tr>
         </table>
       </div>
@@ -841,29 +841,29 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
           <tr><th>Task</th><th>Greedy (D0)</th><th>LLM+GRPO</th><th>Lift (&Delta;)</th><th>Signal</th><th>Exploit Risk</th></tr>
           <tr>
             <td><span class="badge badge-green">Easy</span></td>
-            <td style="color:var(--muted);">42.8%</td><td><strong>90.8%</strong></td>
-            <td class="pos">+48pp</td>
+            <td style="color:var(--muted);">42.8%</td><td><strong>88.5%</strong></td>
+            <td class="pos">+46pp</td>
             <td><span class="badge badge-green">Strong</span></td>
             <td><span class="badge badge-green">None &mdash; 0% eff, 60% breach</span></td>
           </tr>
           <tr>
             <td><span class="badge badge-amber">Medium</span></td>
-            <td style="color:var(--muted);">42.7%</td><td><strong>71.6%</strong></td>
-            <td class="pos">+29pp</td>
+            <td style="color:var(--muted);">42.7%</td><td><strong>75.4%</strong></td>
+            <td class="pos">+33pp</td>
             <td><span class="badge badge-green">Strong</span></td>
             <td><span class="badge badge-green">None &mdash; 8% eff, 80% breach</span></td>
           </tr>
           <tr>
             <td><span class="badge badge-red">Hard</span></td>
-            <td style="color:var(--muted);">33.0%</td><td><strong>66.1%</strong></td>
+            <td style="color:var(--muted);">33.0%</td><td><strong>63.1%</strong></td>
             <td class="pos">+33pp</td>
             <td><span class="badge badge-green">Strong</span></td>
             <td><span class="badge badge-green">None &mdash; 0% eff, 100% breach</span></td>
           </tr>
           <tr style="border-top:1px solid var(--border2);">
             <td><strong>Average</strong></td>
-            <td style="color:var(--muted);">39.5%</td><td><strong>76.2%</strong></td>
-            <td class="pos"><strong>+37pp</strong></td>
+            <td style="color:var(--muted);">39.5%</td><td><strong>75.7%</strong></td>
+            <td class="pos"><strong>+36pp</strong></td>
             <td><span class="badge badge-green">Strong</span></td>
             <td><span class="badge badge-green">No exploits found</span></td>
           </tr>
@@ -874,29 +874,29 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
           <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Easy</div>
           <div style="display:flex;flex-direction:column;gap:0.45rem;">
             <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--muted);">Greedy (D0)</span><span>43%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:43%;background:var(--dim);"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--green);">LLM+GRPO</span><span>91%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:91%;background:var(--green);"></div></div></div>
-            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--green);font-weight:700;">+48pp</span></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--green);">LLM+GRPO</span><span>89%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:89%;background:var(--green);"></div></div></div>
+            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--green);font-weight:700;">+46pp</span></div>
           </div>
         </div>
         <div class="card-sm">
           <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Medium</div>
           <div style="display:flex;flex-direction:column;gap:0.45rem;">
             <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--muted);">Greedy (D0)</span><span>43%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:43%;background:var(--dim);"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--amber);">LLM+GRPO</span><span>72%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:72%;background:var(--amber);"></div></div></div>
-            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--amber);font-weight:700;">+29pp</span></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--amber);">LLM+GRPO</span><span>75%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:75%;background:var(--amber);"></div></div></div>
+            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--amber);font-weight:700;">+33pp</span></div>
           </div>
         </div>
         <div class="card-sm">
           <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Hard</div>
           <div style="display:flex;flex-direction:column;gap:0.45rem;">
             <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--muted);">Greedy (D0)</span><span>33%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:33%;background:var(--dim);"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--red);">LLM+GRPO</span><span>66%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:66%;background:var(--red);"></div></div></div>
-            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--red);font-weight:700;">+33pp</span></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--red);">LLM+GRPO</span><span>63%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:63%;background:var(--red);"></div></div></div>
+            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--red);font-weight:700;">+30pp</span></div>
           </div>
         </div>
       </div>
       <div style="padding:0.85rem 1.1rem;background:var(--green-dim);border:1px solid rgba(61,214,140,0.2);border-radius:8px;font-size:0.72rem;color:var(--text);line-height:1.8;">
-        &#10003; <strong>Variance check passed.</strong> Mean lift of <strong>+37pp</strong> across all tasks.
+        &#10003; <strong>Variance check passed.</strong> Mean lift of <strong>+36pp</strong> across all tasks.
         Greedy (D0) scores 33&ndash;43% with 60&ndash;100% hospital breach rates &mdash; confirming no trivial exploit path.
         LLM+GRPO reaches 66&ndash;91% with zero breaches &mdash; genuine triage reasoning is required and rewarded.
       </div>
@@ -1086,7 +1086,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
     <div class="arch-card"><div class="arch-icon">📊</div><div class="arch-name">grader.py</div><div class="arch-desc">Deterministic trajectory scorer. Reads hidden CityState. Four components weighted into final_score ∈ [0.0, 1.0]. Zero LLM calls.</div></div>
     <div class="arch-card"><div class="arch-icon">🌊</div><div class="arch-name">utils.py</div><div class="arch-desc">SIR-inspired spread model with linear spillover (no wrap-around). Observation builder enforcing partial observability by task.</div></div>
     <div class="arch-card"><div class="arch-icon">🧠</div><div class="arch-name">core/trajectory.py</div><div class="arch-desc">EpisodicMemory. Stores (obs, action, reward) tuples. Retrieves top-k by L1 distance on infection profiles, phase-weighted.</div></div>
-    <div class="arch-card"><div class="arch-icon">🎯</div><div class="arch-name">baseline/evaluator.py</div><div class="arch-desc">GRPO-style loop. Per-task rollouts: easy=3, medium=4, hard=4. Advantage = Rᵢ − mean(R). Memory threshold -0.3. Best score reported.</div></div>
+    <div class="arch-card"><div class="arch-icon">🎯</div><div class="arch-name">baseline/evaluator.py</div><div class="arch-desc">GRPO-style loop. Per-task rollouts: easy=2, medium=4, hard=4. Advantage = Rᵢ − mean(R). Memory threshold -0.3. Best score reported.</div></div>
   </div>
 
   <div class="card">
