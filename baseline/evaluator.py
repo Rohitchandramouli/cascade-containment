@@ -1,4 +1,3 @@
-# baseline/evaluator.py
 import os, sys, time
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from typing import List, Tuple, Any
@@ -13,20 +12,17 @@ from core.policy_update import compute_advantage, update_memory
 import requests as http_requests
 
 N_ROLLOUTS = {
-    "easy":   3,   # Always solves cleanly in 1-2 rollouts, no variance to learn from
-    "medium": 4,   # Needs GRPO learning signal to stabilise
-    "hard":   4,   # Needs GRPO learning signal to stabilise
+    "easy":   3,
+    "medium": 4,
+    "hard":   4,
 }
 
 
 def build_prompt_with_memory(obs: CityObservation, memory: EpisodicMemory) -> str:
-    from baseline.policy import build_prompt
     base         = build_prompt(obs)
     memory_block = memory.retrieve(obs)
-
     if not memory_block:
         return base
-
     injection = "\n" + memory_block + "\nApply these lessons to your current decision.\n"
     return base.replace("Your response:", injection + "Your response:")
 
@@ -129,8 +125,10 @@ def run_task_grpo(
         if verbose:
             mean = sum(completed_rewards[:-1]) / max(len(completed_rewards) - 1, 1) \
                    if len(completed_rewards) > 1 else total_reward
-            print(f"    → Advantage: {advantage:+.4f} | "
-                + (f"↑ Stored {stored} steps" if stored > 0 else "↓ Suppressed"))
+            print(
+                f"    → Advantage: {advantage:+.4f} | "
+                + (f"↑ Stored {stored} steps" if stored > 0 else "↓ Suppressed")
+            )
 
     all_rewards = [r[0] for r in rollouts]
     mean_reward = sum(all_rewards) / len(all_rewards)

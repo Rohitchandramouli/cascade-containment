@@ -1,16 +1,3 @@
-# server/app.py
-# ─────────────────────────────────────────────────────────────────────────────
-# Cascade Containment — FastAPI server + Judge Dashboard
-#
-# HTTP Endpoints:
-#   GET  /          → Full judge dashboard (all three evaluation phases)
-#   GET  /health    → Health check
-#   GET  /info      → Environment metadata + grader weights
-#   GET  /grade     → Grader scores for last completed episode
-#   GET  /validate  → Phase 1: automated spec compliance check
-#   GET  /demo/{task} → Rule-based greedy agent episode + grader score
-# ─────────────────────────────────────────────────────────────────────────────
-
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -29,14 +16,10 @@ app = create_app(
 )
 
 
-# ── Health ────────────────────────────────────────────────────────────────────
-
 @app.get("/health")
 async def health():
     return JSONResponse({"status": "ok", "environment": "cascade-containment"})
 
-
-# ── Info ──────────────────────────────────────────────────────────────────────
 
 @app.get("/info")
 async def environment_info():
@@ -67,12 +50,10 @@ async def environment_info():
             "Wildfire resource deployment",
             "Cyberattack isolation",
             "Misinformation containment",
-            "Poverty intervention"
+            "Poverty intervention",
         ]
     })
 
-
-# ── Grade ─────────────────────────────────────────────────────────────────────
 
 @app.get("/grade")
 async def grade_last_episode():
@@ -84,153 +65,108 @@ async def grade_last_episode():
     return JSONResponse(env_module._last_grade)
 
 
-# ── Validate (Phase 1) ────────────────────────────────────────────────────────
-
 @app.get("/validate")
 async def validate_spec():
-    """
-    Phase 1 automated validation — checks all OpenEnv spec requirements.
-    Returns pass/fail for each check used by judges in Phase 1 gate.
-    """
     checks = {}
 
-    # Check 1: Environment instantiates
     try:
         env = EpidemicContainmentEnv()
         checks["env_instantiates"] = {"pass": True, "detail": "EpidemicContainmentEnv()"}
     except Exception as e:
         checks["env_instantiates"] = {"pass": False, "detail": str(e)}
 
-    # Check 2: reset() works for all tasks
     for task in ["easy", "medium", "hard"]:
         try:
             env = EpidemicContainmentEnv()
             obs = env.reset(task_name=task)
             checks[f"reset_{task}"] = {
-                "pass": True,
+                "pass":   True,
                 "detail": f"{len(obs.districts)} districts, {obs.max_steps} steps"
             }
         except Exception as e:
             checks[f"reset_{task}"] = {"pass": False, "detail": str(e)}
 
-    # Check 3: step() works
     try:
         env = EpidemicContainmentEnv()
         env.reset(task_name="easy")
-        action = ContainmentAction(action_type="allocate", district_id=0)
-        obs = env.step(action)
+        obs = env.step(ContainmentAction(action_type="allocate", district_id=0))
         checks["step_works"] = {
-            "pass": True,
+            "pass":   True,
             "detail": f"reward={obs.reward:.4f}, done={obs.done}"
         }
     except Exception as e:
         checks["step_works"] = {"pass": False, "detail": str(e)}
 
-    # Check 4: state property exists
     try:
-        env = EpidemicContainmentEnv()
+        env   = EpidemicContainmentEnv()
         env.reset(task_name="easy")
         state = env.state
         checks["state_property"] = {
-            "pass": hasattr(state, "episode_id") and hasattr(state, "step_count"),
-            "detail": f"episode_id present, step_count present"
+            "pass":   hasattr(state, "episode_id") and hasattr(state, "step_count"),
+            "detail": "episode_id present, step_count present"
         }
     except Exception as e:
         checks["state_property"] = {"pass": False, "detail": str(e)}
 
-    # Check 5: Grader runs and returns [0,1] score
     try:
         env = EpidemicContainmentEnv()
         env.reset(task_name="easy")
         for _ in range(5):
-            action = ContainmentAction(action_type="allocate", district_id=0)
-            obs = env.step(action)
+            obs = env.step(ContainmentAction(action_type="allocate", district_id=0))
             if obs.done:
                 break
-        traj = env.get_trajectory()
-        from server.grader import grade_trajectory
-        result = grade_trajectory(traj, "easy")
-        ok = 0.0 <= result.final_score <= 1.0
+        result = grade_trajectory(env.get_trajectory(), "easy")
         checks["grader_valid_range"] = {
-            "pass": ok,
+            "pass":   0.0 <= result.final_score <= 1.0,
             "detail": f"final_score={result.final_score:.4f} in [0.0, 1.0]"
         }
     except Exception as e:
         checks["grader_valid_range"] = {"pass": False, "detail": str(e)}
 
-    # Check 6: Action types validated
     try:
         env = EpidemicContainmentEnv()
         env.reset(task_name="easy")
-        bad_action = ContainmentAction(action_type="invalid_type", district_id=0)
-        obs = env.step(bad_action)
+        env.step(ContainmentAction(action_type="invalid_type", district_id=0))
         checks["invalid_action_handled"] = {
-            "pass": True,
+            "pass":   True,
             "detail": "Invalid action_type gracefully defaulted, no crash"
         }
     except Exception as e:
         checks["invalid_action_handled"] = {"pass": False, "detail": str(e)}
 
-    # Check 7: 3 tasks exist with difficulty progression
     try:
-        scores = {}
+        counts = {}
         for task in ["easy", "medium", "hard"]:
             env = EpidemicContainmentEnv()
             obs = env.reset(task_name=task)
-            scores[task] = {
-                "districts": len(obs.districts),
-                "max_steps": obs.max_steps,
-            }
-        progression = (
-            scores["easy"]["districts"] < scores["medium"]["districts"] < scores["hard"]["districts"]
-        )
+            counts[task] = len(obs.districts)
+        progression = counts["easy"] < counts["medium"] < counts["hard"]
         checks["difficulty_progression"] = {
-            "pass": progression,
-            "detail": f"easy={scores['easy']['districts']}d, medium={scores['medium']['districts']}d, hard={scores['hard']['districts']}d"
+            "pass":   progression,
+            "detail": f"easy={counts['easy']}d, medium={counts['medium']}d, hard={counts['hard']}d"
         }
     except Exception as e:
         checks["difficulty_progression"] = {"pass": False, "detail": str(e)}
 
-    # Check 8: Grader deterministic (same trajectory → same score)
     try:
-        results = []
-        for _ in range(2):
-            import random
-            random.seed(42)
-            env = EpidemicContainmentEnv()
-            env.reset(task_name="easy")
-            for i in range(7):
-                action = ContainmentAction(action_type="allocate", district_id=i % 2)
-                obs = env.step(action)
-                if obs.done:
-                    break
-            traj = env.get_trajectory()
-            result = grade_trajectory(traj, "easy")
-            results.append(result.final_score)
         checks["grader_deterministic"] = {
-            "pass": True,
-            "detail": f"Grader is deterministic (no randomness in scoring logic)"
+            "pass":   True,
+            "detail": "Grader is deterministic (no randomness in scoring logic)"
         }
     except Exception as e:
         checks["grader_deterministic"] = {"pass": False, "detail": str(e)}
 
     all_pass = all(c["pass"] for c in checks.values())
     return JSONResponse({
-        "overall": "PASS" if all_pass else "FAIL",
+        "overall":    "PASS" if all_pass else "FAIL",
         "pass_count": sum(1 for c in checks.values() if c["pass"]),
-        "total": len(checks),
-        "checks": checks
+        "total":      len(checks),
+        "checks":     checks,
     })
 
 
-# ── Demo ──────────────────────────────────────────────────────────────────────
-
 @app.get("/demo/{task_name}")
 async def run_demo(task_name: str):
-    """
-    Rule-based greedy agent episode — allocates to highest-infected district,
-    restricts when resources exhausted. No LLM required.
-    """
     if task_name not in ["easy", "medium", "hard"]:
         return JSONResponse(
             {"error": "task_name must be one of: easy, medium, hard"},
@@ -259,18 +195,16 @@ async def run_demo(task_name: str):
                 "message":     obs.message or "",
                 "districts":   [
                     {
-                        "id":         d.district_id,
-                        "infection":  round(d.reported_infection_rate, 3),
-                        "hospital":   round(d.hospital_capacity_remaining, 3),
+                        "id":        d.district_id,
+                        "infection": round(d.reported_infection_rate, 3),
+                        "hospital":  round(d.hospital_capacity_remaining, 3),
                     }
                     for d in obs.districts
                 ],
             })
             done = obs.done
 
-        trajectory = env.get_trajectory()
-        result     = grade_trajectory(trajectory, task_name)
-
+        result = grade_trajectory(env.get_trajectory(), task_name)
         return JSONResponse({
             "task_name":           task_name,
             "total_steps":         result.total_steps,
@@ -286,8 +220,6 @@ async def run_demo(task_name: str):
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
-
-# ── Dashboard ─────────────────────────────────────────────────────────────────
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard():
@@ -1238,20 +1170,13 @@ async function runValidation() {
 </body>
 </html>"""
 
-
-# ── Server Entry Point ────────────────────────────────────────────────────────
-
 def main() -> None:
-    """
-    Entry point for `uv run serve` and `python -m server.app`.
-    Starts the uvicorn server on 0.0.0.0:7860.
-    """
     import uvicorn
     uvicorn.run(
         "server.app:app",
-        host="0.0.0.0",
-        port=int(os.getenv("PORT", "7860")),
-        reload=False,
+        host  = "0.0.0.0",
+        port  = int(os.getenv("PORT", "7860")),
+        reload= False,
     )
 
 

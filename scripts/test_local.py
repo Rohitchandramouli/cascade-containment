@@ -1,23 +1,5 @@
-# scripts/test_local.py
-# ─────────────────────────────────────────────────────────────────────────────
-# Cascade Containment — local validation and benchmark script.
-#
-# Runs four evaluation passes:
-#   1. Spec compliance checks (Phase 1 gate)
-#   2. Dumb greedy benchmark  — always allocates to D0 (random, no intelligence)
-#   3. Variance analysis: Dumb greedy vs LLM+GRPO reference
-#
-# Key distinction:
-#   Dumb greedy = reference floor that ANY agent should beat
-#   LLM+GRPO    = language model with episodic memory across rollouts
-#
-# Usage:
-#   python scripts/test_local.py
-# ─────────────────────────────────────────────────────────────────────────────
-
 import sys
 import os
-import random
 import time
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
@@ -26,17 +8,13 @@ from models import ContainmentAction
 from server.grader import grade_trajectory
 
 
-# ── LLM+GRPO reference scores from baseline/run.py ────────────────────────────
-# Update these after each fresh baseline/run.py session.
-
+# LLM+GRPO reference scores — update this dict after each baseline/run.py session.
 GRPO_SCORES = {
     "easy":   {"score": 0.9083, "containment": 1.000, "hospital": 0.999, "efficiency": 0.857},
     "medium": {"score": 0.7161, "containment": 0.423, "hospital": 0.976, "efficiency": 1.000},
     "hard":   {"score": 0.6608, "containment": 0.513, "hospital": 0.971, "efficiency": 0.467},
 }
 
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
 
 def sep(char="─", n=56): print(char * n)
 def header(title):
@@ -45,20 +23,18 @@ def header(title):
     sep("═")
 
 
-# ── Phase 1: Spec compliance ──────────────────────────────────────────────────
+# ── Phase 1: spec compliance ──────────────────────────────────────────────────
 
 def run_spec_checks() -> bool:
     header("PHASE 1 — SPEC COMPLIANCE CHECKS")
     results = {}
 
-    # 1. Env instantiates
     try:
         EpidemicContainmentEnv()
         results["env_instantiates"] = (True, "EpidemicContainmentEnv()")
     except Exception as e:
         results["env_instantiates"] = (False, str(e))
 
-    # 2. reset() for all tasks
     for task in ["easy", "medium", "hard"]:
         try:
             env = EpidemicContainmentEnv()
@@ -67,7 +43,6 @@ def run_spec_checks() -> bool:
         except Exception as e:
             results[f"reset_{task}"] = (False, str(e))
 
-    # 3. step() works
     try:
         env = EpidemicContainmentEnv()
         env.reset(task_name="easy")
@@ -76,7 +51,6 @@ def run_spec_checks() -> bool:
     except Exception as e:
         results["step_works"] = (False, str(e))
 
-    # 4. state property
     try:
         env = EpidemicContainmentEnv()
         env.reset(task_name="easy")
@@ -86,7 +60,6 @@ def run_spec_checks() -> bool:
     except Exception as e:
         results["state_property"] = (False, str(e))
 
-    # 5. Grader [0, 1] range
     try:
         env = EpidemicContainmentEnv()
         env.reset(task_name="easy")
@@ -100,7 +73,6 @@ def run_spec_checks() -> bool:
     except Exception as e:
         results["grader_range"] = (False, str(e))
 
-    # 6. Invalid action handled
     try:
         env = EpidemicContainmentEnv()
         env.reset(task_name="easy")
@@ -109,7 +81,6 @@ def run_spec_checks() -> bool:
     except Exception as e:
         results["invalid_action"] = (False, str(e))
 
-    # 7. Difficulty progression
     try:
         counts = {}
         for task in ["easy", "medium", "hard"]:
@@ -122,7 +93,6 @@ def run_spec_checks() -> bool:
     except Exception as e:
         results["difficulty_progression"] = (False, str(e))
 
-    # 8. Grader deterministic
     try:
         results["grader_deterministic"] = (True, "Scoring logic is pure — no internal randomness")
     except Exception as e:
@@ -130,22 +100,20 @@ def run_spec_checks() -> bool:
 
     print()
     for name, (ok, detail) in results.items():
-        icon  = "✓" if ok else "✗"
         label = name.replace("_", " ").title()
-        print(f"  {icon} {label:<30} {detail}")
+        print(f"  {'✓' if ok else '✗'} {label:<30} {detail}")
     print()
     passed = sum(1 for ok, _ in results.values() if ok)
     sep()
-    status = "ALL PASSED" if passed == len(results) else f"{passed}/{len(results)} PASSED"
-    print(f"  Phase 1 result: {status}")
+    print(f"  Phase 1 result: {'ALL PASSED' if passed == len(results) else f'{passed}/{len(results)} PASSED'}")
     sep()
     return passed == len(results)
 
 
-# ── Agent runner ──────────────────────────────────────────────────────────────
+# ── Phase 2: greedy benchmark ─────────────────────────────────────────────────
 
 def run_greedy(task_name: str, n_runs: int = 5) -> dict:
-    """Dumb greedy: always allocates to district 0, ignores all data."""
+    """Always allocates to district 0 — ignores all infection data."""
     all_scores, all_cont, all_hosp, all_eff = [], [], [], []
     breach_count = 0
 
@@ -186,16 +154,14 @@ def run_greedy(task_name: str, n_runs: int = 5) -> dict:
     }
 
 
-# ── Phase 2: Benchmarks ───────────────────────────────────────────────────────
-
 def run_benchmarks() -> dict:
     header("PHASE 2 — GREEDY BASELINE BENCHMARK  (5 runs / task)")
     print()
     greedy_results = {}
 
     for task in ["easy", "medium", "hard"]:
-        t0 = time.time()
-        r  = run_greedy(task, n_runs=5)
+        t0      = time.time()
+        r       = run_greedy(task, n_runs=5)
         elapsed = round(time.time() - t0, 1)
         greedy_results[task] = r
 
@@ -211,7 +177,7 @@ def run_benchmarks() -> dict:
     return greedy_results
 
 
-# ── Phase 2: Variance analysis ────────────────────────────────────────────────
+# ── Phase 2: variance check ───────────────────────────────────────────────────
 
 def variance_analysis(greedy_results: dict):
     header("PHASE 2 — SCORE VARIANCE CHECK")
@@ -229,25 +195,25 @@ def variance_analysis(greedy_results: dict):
         print(f"  {task:<10} {g:>12.4f} {l:>10.4f} {delta:>+10.4f} {signal:>10}")
 
     sep("─", 56)
-    avg_g   = round(sum(greedy_results[t]["score"] for t in ["easy","medium","hard"]) / 3, 4)
-    avg_l   = round(sum(GRPO_SCORES[t]["score"]    for t in ["easy","medium","hard"]) / 3, 4)
+    avg_g    = round(sum(greedy_results[t]["score"] for t in ["easy", "medium", "hard"]) / 3, 4)
+    avg_l    = round(sum(GRPO_SCORES[t]["score"]    for t in ["easy", "medium", "hard"]) / 3, 4)
     avg_lift = round(sum(lifts) / 3, 4)
     print(f"  {'Average':<10} {avg_g:>12.4f} {avg_l:>10.4f} {avg_lift:>+10.4f}")
     print()
 
-    exploitable = any(greedy_results[t]["score"] > 0.60 for t in ["easy","medium","hard"])
+    exploitable = any(greedy_results[t]["score"] > 0.60 for t in ["easy", "medium", "hard"])
     print(f"  Interpretation:")
-    print(f"    Mean lift = {avg_lift:+.4f}  ({'Strong — environment meaningfully discriminates agent quality ✓' if avg_lift > 0.30 else 'Weak — review task difficulty ⚠'})")
-    print(f"    Exploit check: {'⚠ Greedy exceeds 0.60 on some task — review difficulty' if exploitable else '✓ No task trivially solvable by fixed-target allocation'}")
+    print(f"    Mean lift = {avg_lift:+.4f}  "
+          f"({'Strong — environment meaningfully discriminates agent quality ✓' if avg_lift > 0.30 else 'Weak — review task difficulty ⚠'})")
+    print(f"    Exploit check: "
+          f"{'⚠ Greedy exceeds 0.60 on some task — review difficulty' if exploitable else '✓ No task trivially solvable by fixed-target allocation'}")
     print()
     print("  Run-to-run variance (reproducibility across 5 runs):")
-    for task in ["easy","medium","hard"]:
+    for task in ["easy", "medium", "hard"]:
         r = greedy_results[task]
         print(f"    {task:<8} σ={r['score_std']:.4f}  min={r['score_min']:.4f}  max={r['score_max']:.4f}")
     print()
 
-
-# ── Paste-ready table ─────────────────────────────────────────────────────────
 
 def print_app_table(greedy_results: dict):
     header("APP.PY BENCHMARK TABLE — paste these into Phase 2 tab after each run")
@@ -258,7 +224,7 @@ def print_app_table(greedy_results: dict):
         print(f"    {task.upper():<8} score={g['score']:.2f}  cont={g['containment']:.2f}  "
               f"hosp={g['hospital']:.2f}  eff={g['efficiency']:.2f}  breach={g['breach_rate']*100:.0f}%")
     print()
-    print("  LLM+GRPO (update GRPO_SCORES dict above after each baseline/run.py session):")
+    print("  LLM+GRPO (update GRPO_SCORES at the top of this file after each run):")
     for task in ["easy", "medium", "hard"]:
         l = GRPO_SCORES[task]
         print(f"    {task.upper():<8} score={l['score']:.2f}  cont={l['containment']:.2f}  "
@@ -272,7 +238,6 @@ def run_mechanic_checks():
     header("MECHANIC CHECKS")
     print()
 
-    # Restriction auto-lift
     env = EpidemicContainmentEnv()
     obs = env.reset("easy")
     env.step(ContainmentAction(action_type="restrict", district_id=0))
@@ -281,9 +246,9 @@ def run_mechanic_checks():
         if obs.done:
             break
     lifted = not obs.districts[0].restriction_active if obs.districts else True
-    print(f"  {'✓' if lifted else '⚠'} Restriction auto-lift: {'active restrictions cleared when safe' if lifted else 'restriction still active after containment'}")
+    print(f"  {'✓' if lifted else '⚠'} Restriction auto-lift: "
+          f"{'active restrictions cleared when safe' if lifted else 'restriction still active after containment'}")
 
-    # Hospital breach ends episode
     env = EpidemicContainmentEnv()
     obs = env.reset("medium")
     found_breach = False
@@ -292,15 +257,15 @@ def run_mechanic_checks():
         if obs.done and obs.message and "breach" in obs.message.lower():
             found_breach = True
             break
-    print(f"  {'✓' if found_breach else '~'} Hospital breach terminates episode: {'confirmed' if found_breach else 'not triggered this run (depends on random spread rates)'}")
+    print(f"  {'✓' if found_breach else '~'} Hospital breach terminates episode: "
+          f"{'confirmed' if found_breach else 'not triggered this run (spread rates are random)'}")
 
-    # Hard task 3-day lag
     env = EpidemicContainmentEnv()
     env.reset("hard")
     has_lag = len(env._city.infection_history) >= 3
-    print(f"  {'✓' if has_lag else '✗'} Hard task 3-day infection history: {'pre-populated' if has_lag else 'missing'}")
+    print(f"  {'✓' if has_lag else '✗'} Hard task 3-day infection history: "
+          f"{'pre-populated' if has_lag else 'missing'}")
 
-    # Resources replenish
     env = EpidemicContainmentEnv()
     obs = env.reset("easy")
     res_before = obs.available_resources
@@ -309,11 +274,10 @@ def run_mechanic_checks():
         if obs.done:
             break
     obs = env.step(ContainmentAction(action_type="allocate", district_id=0))
-    print(f"  {'✓' if obs.available_resources > 0 else '✗'} Resource replenishment: {'confirmed (+1/step)' if obs.available_resources > 0 else 'not working'}")
+    print(f"  {'✓' if obs.available_resources > 0 else '✗'} Resource replenishment: "
+          f"{'confirmed (+1/step)' if obs.available_resources > 0 else 'not working'}")
     print()
 
-
-# ── Main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     print()
@@ -321,9 +285,9 @@ if __name__ == "__main__":
     print(f"  {time.strftime('%Y-%m-%d %H:%M:%S')}")
     print()
 
-    phase1_ok              = run_spec_checks()
+    phase1_ok = run_spec_checks()
     print()
-    greedy                 = run_benchmarks()
+    greedy    = run_benchmarks()
     variance_analysis(greedy)
     print_app_table(greedy)
     run_mechanic_checks()

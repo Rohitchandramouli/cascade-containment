@@ -1,4 +1,3 @@
-# utils.py
 import random
 import uuid
 from typing import List, Optional
@@ -24,7 +23,7 @@ from server.constants import (
 
 
 def generate_districts(
-    num_districts: int,
+    num_districts:   int,
     seed_infections: List[float],
 ) -> List[DistrictTruth]:
     assert len(seed_infections) == num_districts
@@ -51,15 +50,15 @@ def generate_episode_id() -> str:
 
 
 def build_observation(
-    state:        CityState,
-    step_count:   int,
-    reward:       Optional[float] = None,
-    message:      Optional[str]   = None,
-    done:         bool             = False,
+    state:      CityState,
+    step_count: int,
+    reward:     Optional[float] = None,
+    message:    Optional[str]   = None,
+    done:       bool             = False,
 ) -> CityObservation:
     """
-    Convert hidden CityState into the agent-visible CityObservation.
-    Hard task enforces 3-day data lag on infection rates.
+    Build the agent-visible observation from hidden city state.
+    Hard task enforces a 3-day lag on reported infection rates.
     Hospital capacity and growth hints are always real-time.
     """
     district_observations = []
@@ -95,20 +94,13 @@ def build_observation(
 
 def compute_spread(districts: List[DistrictTruth]) -> List[float]:
     """
-    Compute new infection rates after one day.
+    Advance infection rates by one day using a simplified SIR-inspired model.
 
-    Epidemiological model:
-      net_change = spread_rate - natural_recovery - intervention_reductions
-      new_rate   = current + net_change + geographic_spillover
+    Net change per district:
+        delta = effective_spread_rate - natural_recovery + geographic_spillover
 
-    Natural recovery (NATURAL_RECOVERY_RATE = 0.01/day) reflects infected
-    individuals recovering without medical intervention. This means infection
-    naturally decays slightly each day, but spread rate still dominates
-    without active response — districts grow unless the agent acts.
-
-    Spillover is LINEAR (no wrap-around): district 0 and district N-1 are
-    not adjacent, reflecting a realistic city corridor or ring layout where
-    geographically distant districts do not directly infect each other.
+    Spillover is linear (no wrap-around). District 0 and the last district
+    are not adjacent, which mirrors a city corridor layout rather than a ring.
     """
     from server.constants import (
         ALLOCATE_REDUCTION,
@@ -132,11 +124,9 @@ def compute_spread(districts: List[DistrictTruth]) -> List[float]:
                 effective_spread - (ALLOCATE_REDUCTION * district.deployed_resources)
             )
 
-        # Net change: growth minus natural recovery
         net_change = effective_spread - NATURAL_RECOVERY_RATE
         new_rate   = district.true_infection_rate + net_change
 
-        # Linear spillover — no wrap-around
         if i > 0:
             new_rate += districts[i - 1].true_infection_rate * SPILLOVER_RATE
         if i < n - 1:

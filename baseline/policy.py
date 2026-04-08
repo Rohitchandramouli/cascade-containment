@@ -1,4 +1,3 @@
-# baseline/policy.py
 import os, sys, json, re
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from openai import OpenAI
@@ -51,7 +50,7 @@ def build_prompt(obs: CityObservation) -> str:
             hosp_status = "hospital OK"
 
         if has_data_lag:
-            # Pre-compute estimated current infection — don't ask LLM to do math
+            # pre-compute estimated current infection so the LLM doesn't have to do the math
             estimated = round(min(1.0, d.reported_infection_rate + 3 * d.growth_rate_hint), 2)
             if estimated > 0.4:
                 est_status = "🔴 EST.CRITICAL"
@@ -142,7 +141,7 @@ def call_llm(prompt: str, client: OpenAI) -> str:
             },
             {"role": "user", "content": prompt}
         ],
-        max_tokens  = 60,   # increased to allow brief reasoning + JSON
+        max_tokens  = 60,
         temperature = 0.1,
     )
     return (response.choices[0].message.content or "").strip()

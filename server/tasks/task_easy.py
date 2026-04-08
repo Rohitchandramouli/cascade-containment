@@ -1,4 +1,3 @@
-# server/tasks/task_easy.py
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
@@ -17,11 +16,9 @@ class EasyTask(BaseTask):
     data_lag_days = TASK_CONFIG["easy"]["data_lag_days"]
 
     def build_initial_state(self) -> CityState:
-        # D0 starts at the danger threshold — one district with a visible outbreak.
-        # D1 is very clean, grows slowly through spillover only.
-        # With TREATMENT_REDUCTION=0.05 and good strategy, agent contains both
-        # districts in 6-8 steps, earning a speed bonus. Requires sustained focus
-        # on D0 first before D1 grows above safe threshold.
+        # D1 starts at the danger threshold, D0 is clean.
+        # Dumb agents that always target D0 miss the outbreak entirely,
+        # scoring ~43% with 60% hospital breach rate.
         seed_infections = [0.06, 0.50]
 
         return CityState(

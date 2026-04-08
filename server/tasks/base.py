@@ -1,9 +1,3 @@
-# server/tasks/base.py
-# ─────────────────────────────────────────────────────────────────────────────
-# Abstract base class that every task must implement.
-# Defines the interface environment.py uses to initialise any episode.
-# ─────────────────────────────────────────────────────────────────────────────
-
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
@@ -14,7 +8,6 @@ from models import CityState
 
 class BaseTask(ABC):
 
-    # These must be defined by every subclass
     name:           str
     num_districts:  int
     max_steps:      int
@@ -23,10 +16,7 @@ class BaseTask(ABC):
 
     @abstractmethod
     def build_initial_state(self) -> CityState:
-        """
-        Return a freshly initialised CityState for a new episode.
-        Called by environment.py at the start of every reset().
-        """
+        """Return a fresh CityState for a new episode. Called by environment.reset()."""
         ...
 
     def __repr__(self) -> str:

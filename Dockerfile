@@ -1,9 +1,3 @@
-# server/Dockerfile
-# ─────────────────────────────────────────────────────────────────────────────
-# Builds the Cascade Containment environment server.
-# Exposes port 7860 — required for Hugging Face Spaces deployment.
-# ─────────────────────────────────────────────────────────────────────────────
-
 FROM python:3.11-slim
 
 WORKDIR /app

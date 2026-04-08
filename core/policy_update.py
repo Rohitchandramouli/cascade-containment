@@ -1,25 +1,19 @@
-# core/policy_update.py
-# ─────────────────────────────────────────────────────────────────────────────
-# GRPO-style advantage computation and memory update logic.
-# Determines which rollouts are above average and should be reinforced.
-# ─────────────────────────────────────────────────────────────────────────────
-
 import os
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from typing import List, Tuple
+from typing import List
 from core.trajectory import EpisodicMemory
 
 
 def compute_advantage(
-    current_reward: float,
+    current_reward:    float,
     completed_rewards: List[float],
 ) -> float:
     """
-    GRPO advantage = R_i - mean(R).
-    Positive advantage → this rollout was better than average → reinforce.
-    Negative advantage → below average → suppress.
+    GRPO advantage = R_i - mean(R_completed).
+    Positive means this rollout was better than average; negative means worse.
+    Returns 0.0 on the first rollout where there's nothing to compare against.
     """
     if not completed_rewards:
         return 0.0
@@ -28,11 +22,8 @@ def compute_advantage(
 
 
 def should_reinforce(advantage: float) -> bool:
-    """
-    Reinforce if advantage >= 0 (at or above mean).
-    Suppress if below mean.
-    """
-    return advantage > -0.5  # allow small negative margin to encourage exploration
+    # Small negative margin is allowed to encourage exploration on borderline rollouts.
+    return advantage > -0.5
 
 
 def update_memory(
@@ -41,10 +32,9 @@ def update_memory(
     advantage:  float,
 ) -> int:
     """
-    If advantage >= 0, store all positive-reward steps from this trajectory
-    into episodic memory. Returns number of steps stored.
-
-    If advantage < 0, memory is unchanged — bad rollout suppressed.
+    Store positive-reward steps from this trajectory into episodic memory
+    if the rollout was at or above average (advantage > threshold).
+    Returns the number of steps stored. Bad rollouts leave memory unchanged.
     """
     if not should_reinforce(advantage):
         return 0

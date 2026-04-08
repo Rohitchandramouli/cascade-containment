@@ -1,10 +1,3 @@
-# openenv.yaml
-# ─────────────────────────────────────────────────────────────────────────────
-# Environment manifest for Cascade Containment.
-# Read by the OpenEnv auto-validator before any code is executed.
-# Field names and structure must match the OpenEnv spec exactly.
-# ─────────────────────────────────────────────────────────────────────────────
-
 name: cascade-containment
 version: "1.0.0"
 description: >
@@ -17,15 +10,11 @@ description: >
 author: SST-Team
 license: MIT
 
-# ── Environment Entry Point ───────────────────────────────────────────────────
-
 server:
-  module:   server.app
-  app:      app
-  port:     7860
+  module:     server.app
+  app:        app
+  port:       7860
   dockerfile: Dockerfile
-
-# ── Action Space ──────────────────────────────────────────────────────────────
 
 action:
   type: object
@@ -39,8 +28,6 @@ action:
       type: integer
       description: "Target district index (0-indexed)"
       minimum: 0
-
-# ── Observation Space ─────────────────────────────────────────────────────────
 
 observation:
   type: object
@@ -90,11 +77,9 @@ observation:
       type: string
       nullable: true
 
-# ── Tasks ─────────────────────────────────────────────────────────────────────
-
 tasks:
   - name: easy
-    description: "2 districts, 1 outbreak, real-time data, generous resources"
+    description: "2 districts, 1 outbreak seeded in D1, real-time data"
     max_steps: 10
     num_districts: 2
 
@@ -107,8 +92,6 @@ tasks:
     description: "6 districts, 3-day data lag, scarce resources"
     max_steps: 15
     num_districts: 6
-
-# ── Generalisation Note ───────────────────────────────────────────────────────
 
 tags:
   - reinforcement-learning

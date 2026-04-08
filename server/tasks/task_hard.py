@@ -1,4 +1,3 @@
-# server/tasks/task_hard.py
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -19,19 +18,18 @@ class HardTask(BaseTask):
     data_lag_days = TASK_CONFIG["hard"]["data_lag_days"]
 
     def build_initial_state(self) -> CityState:
-        # All districts start with small but growing infections.
-        # The 3-day lag means agent sees these seed values while true
-        # infection is already 3 days ahead — districts D0, D2, D4 will
-        # be CRITICAL before the agent sees updated data.
-        # 7 resources for 6 districts with delayed information is
-        # the hardest possible triage scenario.
+        # All six districts start with small but growing infections.
+        # The 3-day lag means the agent observes these seed values on step 1
+        # while true infection is already 3 days ahead — districts 0, 2, and 4
+        # are likely in the danger zone before updated data arrives.
+        # Pre-populate infection_history so build_observation can apply the lag
+        # correctly from the very first step.
         seed_infections = [0.20, 0.14, 0.23, 0.11, 0.26, 0.17]
 
-        initial_rates     = seed_infections[:]
         infection_history = [
-            initial_rates[:],  # day -3 (what agent sees on step 1)
-            initial_rates[:],  # day -2
-            initial_rates[:],  # day -1
+            seed_infections[:],  # day -3 (what agent sees on step 1)
+            seed_infections[:],  # day -2
+            seed_infections[:],  # day -1
         ]
 
         return CityState(
