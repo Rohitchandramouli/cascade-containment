@@ -966,9 +966,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
   </div>
 </div>
 
-
-     PHASE 3 — HUMAN REVIEW
-════════════════════════════════════════════════ -->
+<!-- PHASE 3 — HUMAN REVIEW -->
 <div id="tab-phase3" class="section">
   <div class="phase-header">
     <div class="phase-num p3">3</div>
