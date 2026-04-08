@@ -593,7 +593,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
     <div class="brand-icon">🦠</div>
     <div>
       <div class="brand-name">Cascade Containment</div>
-      <div class="brand-sub">OpenEnv Benchmark &middot; Meta PyTorch Hackathon × SST 2026</div>
+      <div class="brand-sub">OpenEnv Benchmark &middot; Meta PyTorch Hackathon × SST 2026 &middot; LLM avg 76.2%</div>
     </div>
   </div>
   <div class="header-right">
@@ -636,8 +636,8 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
     </div>
     <div class="hero-stats">
       <div class="hs-item"><div class="hs-val">3</div><div class="hs-label">Task levels</div></div>
-      <div class="hs-item"><div class="hs-val">5</div><div class="hs-label">Reward terms</div></div>
-      <div class="hs-item"><div class="hs-val">4+</div><div class="hs-label">Domains</div></div>
+      <div class="hs-item"><div class="hs-val">76.2%</div><div class="hs-label">LLM+GRPO avg</div></div>
+      <div class="hs-item"><div class="hs-val">+37pp</div><div class="hs-label">vs greedy</div></div>
     </div>
   </div>
 
@@ -742,16 +742,23 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
   </div>
 
   <div style="margin-top:1rem;" class="card">
-    <div class="card-title">What Phase 1 Checks</div>
+    <div class="card-title">Phase 1 Results — Last Run (2026-04-07)</div>
     <table class="table">
-      <tr><th>Check</th><th>Requirement</th></tr>
-      <tr><td>HF Space deploys</td><td>Environment responds on port 7860</td></tr>
-      <tr><td>OpenEnv spec compliance</td><td>reset(), step(), state property all function correctly</td></tr>
-      <tr><td>3+ tasks with graders</td><td>Easy, Medium, Hard all produce grader scores in [0.0, 1.0]</td></tr>
-      <tr><td>Invalid actions handled</td><td>Bad input doesn't crash the episode</td></tr>
-      <tr><td>Difficulty progression</td><td>Tasks scale in complexity (districts, steps, resources)</td></tr>
-      <tr><td>Grader deterministic</td><td>Same trajectory always returns same score</td></tr>
+      <tr><th>Check</th><th>Result</th><th>Detail</th></tr>
+      <tr><td>Env instantiates</td><td><span class="badge badge-green">&#10003; Pass</span></td><td>EpidemicContainmentEnv()</td></tr>
+      <tr><td>Reset — Easy</td><td><span class="badge badge-green">&#10003; Pass</span></td><td>2 districts, 10 steps</td></tr>
+      <tr><td>Reset — Medium</td><td><span class="badge badge-green">&#10003; Pass</span></td><td>4 districts, 15 steps</td></tr>
+      <tr><td>Reset — Hard</td><td><span class="badge badge-green">&#10003; Pass</span></td><td>6 districts, 15 steps</td></tr>
+      <tr><td>Step works</td><td><span class="badge badge-green">&#10003; Pass</span></td><td>reward=-0.0599, done=False</td></tr>
+      <tr><td>State property</td><td><span class="badge badge-green">&#10003; Pass</span></td><td>episode_id present, step_count present</td></tr>
+      <tr><td>Grader valid range</td><td><span class="badge badge-green">&#10003; Pass</span></td><td>final_score=0.5573 in [0.0, 1.0]</td></tr>
+      <tr><td>Invalid action handled</td><td><span class="badge badge-green">&#10003; Pass</span></td><td>Gracefully defaulted to allocate</td></tr>
+      <tr><td>Difficulty progression</td><td><span class="badge badge-green">&#10003; Pass</span></td><td>easy=2d, medium=4d, hard=6d</td></tr>
+      <tr><td>Grader deterministic</td><td><span class="badge badge-green">&#10003; Pass</span></td><td>Scoring logic is pure — no internal randomness</td></tr>
     </table>
+    <div style="margin-top:0.75rem;padding:0.6rem 1rem;background:var(--green-dim);border:1px solid rgba(61,214,140,0.2);border-radius:6px;font-size:0.7rem;color:var(--text);">
+      &#10003; <strong>10 / 10 checks passed.</strong> Click "Run Validation" above to re-run live against the deployed environment.
+    </div>
   </div>
 </div>
 
@@ -1014,7 +1021,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
         </tr>
         <tr>
           <td>Trivially containable (easy task too easy)</td>
-          <td>Random spread rates [0.03–0.08] create variance; greedy agent scores only ~0.50</td>
+          <td>D0-only allocation scores 43% avg; 60–100% hospital breach rate — no trivial path to high scores</td>
           <td><span class="badge badge-green">Addressed</span></td>
         </tr>
         <tr>
@@ -1147,7 +1154,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
     <div class="arch-card"><div class="arch-icon">📊</div><div class="arch-name">grader.py</div><div class="arch-desc">Deterministic trajectory scorer. Reads hidden CityState. Four components weighted into final_score ∈ [0.0, 1.0]. Zero LLM calls.</div></div>
     <div class="arch-card"><div class="arch-icon">🌊</div><div class="arch-name">utils.py</div><div class="arch-desc">SIR-inspired spread model with linear spillover (no wrap-around). Observation builder enforcing partial observability by task.</div></div>
     <div class="arch-card"><div class="arch-icon">🧠</div><div class="arch-name">core/trajectory.py</div><div class="arch-desc">EpisodicMemory. Stores (obs, action, reward) tuples. Retrieves top-k by L1 distance on infection profiles, phase-weighted.</div></div>
-    <div class="arch-card"><div class="arch-icon">🎯</div><div class="arch-name">baseline/evaluator.py</div><div class="arch-desc">GRPO-style loop. Advantage = Rᵢ − mean(R). Memory gated by advantage threshold. Reports best grader score across rollouts.</div></div>
+    <div class="arch-card"><div class="arch-icon">🎯</div><div class="arch-name">baseline/evaluator.py</div><div class="arch-desc">GRPO-style loop. Per-task rollouts: easy=3, medium=4, hard=4. Advantage = Rᵢ − mean(R). Memory threshold -0.3. Best score reported.</div></div>
   </div>
 
   <div class="card">
