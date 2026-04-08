@@ -1,0 +1,91 @@
+# config/tasks.yaml
+# Task configuration reference for Cascade Containment.
+# These values are the source of truth used in server/constants.py TASK_CONFIG.
+# If you change a value here, update constants.py to match.
+
+tasks:
+
+  easy:
+    num_districts: 2
+    max_steps:     10
+    resource_pool: 10
+    data_lag_days: 0
+    seed_infections: [0.06, 0.50]
+    description: >
+      Single outbreak. D1 starts in the danger zone, D0 is clean.
+      Agents that ignore infection data and always target D0 score ~43%
+      with a 60% hospital breach rate — the task requires basic observation.
+
+  medium:
+    num_districts: 4
+    max_steps:     15
+    resource_pool: 8
+    data_lag_days: 0
+    seed_infections: [0.42, 0.10, 0.38, 0.10]
+    description: >
+      Two simultaneous outbreaks in D0 and D2. D1 and D3 start low but
+      grow into the danger zone within 4-6 steps via spillover.
+      8 resources across 4 districts over 15 steps requires real triage —
+      the agent cannot cover all districts at once.
+
+  hard:
+    num_districts: 6
+    max_steps:     15
+    resource_pool: 7
+    data_lag_days: 3
+    seed_infections: [0.20, 0.14, 0.23, 0.11, 0.26, 0.17]
+    description: >
+      Six growing outbreaks with a 3-day reporting lag. The agent sees
+      infection rates from 3 days ago; true infection is already higher.
+      Growth hints provide a noisy estimate of current trajectory.
+      7 resources for 6 districts under structural uncertainty is the
+      hardest triage scenario in the benchmark.
+
+# Spread model parameters
+spread:
+  rate_min:             0.03   # minimum spread rate per district per day
+  rate_max:             0.08   # maximum spread rate per district per day
+  natural_recovery:     0.01   # passive case resolution per day (no intervention)
+  treatment_reduction:  0.05   # allocate reduces existing infection by this
+  allocate_reduction:   0.10   # allocate suppresses future spread rate this step
+  restrict_reduction:   0.05   # restrict reduces spread rate while active
+  spillover_rate:       0.01   # infection bleed to adjacent districts each step
+  growth_hint_noise:    0.03   # noise added to spread rate in agent observation
+
+# Threshold values
+thresholds:
+  infection_danger:     0.40   # above this a district is in the danger zone
+  infection_safe:       0.20   # below this a district is considered contained
+  hospital_breach:      0.10   # at or below this triggers episode failure
+
+# Reward terms
+rewards:
+  infection_penalty:        -0.50  # per district above infection_danger, weighted by density
+  hospital_breach:          -1.00  # per district at or below hospital_breach threshold
+  early_containment:        +0.50  # per district below infection_safe (decays over time)
+  unnecessary_restriction:  -0.20  # restricting a district already below infection_safe
+  correct_prioritisation:   +0.30  # allocating to the highest-infected district
+
+# Grader weights (must sum to 1.0)
+grader:
+  containment: 0.30
+  hospital:    0.45
+  efficiency:  0.15
+  speed:       0.10
+
+# Baseline benchmark results (update after each full evaluation run)
+benchmark:
+  rollouts:
+    easy:   2
+    medium: 4
+    hard:   4
+  greedy_d0:
+    easy:   {score: 0.428, breach_rate: 0.60}
+    medium: {score: 0.427, breach_rate: 0.80}
+    hard:   {score: 0.330, breach_rate: 1.00}
+  llm_grpo:
+    easy:   {score: 0.885, model: llama-3.1-8b-instant}
+    medium: {score: 0.754, model: llama-3.1-8b-instant}
+    hard:   {score: 0.631, model: llama-3.1-8b-instant}
+    average: 0.757
+    runtime_seconds: 1229

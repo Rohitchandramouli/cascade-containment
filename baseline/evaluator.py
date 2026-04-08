@@ -12,7 +12,7 @@ from core.policy_update import compute_advantage, update_memory
 import requests as http_requests
 
 N_ROLLOUTS = {
-    "easy":   3,
+    "easy":   2,
     "medium": 4,
     "hard":   4,
 }

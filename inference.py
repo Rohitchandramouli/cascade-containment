@@ -20,7 +20,7 @@ ENV_BASE_URL = os.getenv("ENV_BASE_URL", "http://localhost:7860")
 BENCHMARK    = "cascade-containment"
 
 N_ROLLOUTS = {
-    "easy":   3,
+    "easy":   2,
     "medium": 4,
     "hard":   4,
 }

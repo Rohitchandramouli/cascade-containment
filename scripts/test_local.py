@@ -10,9 +10,9 @@ from server.grader import grade_trajectory
 
 # LLM+GRPO reference scores — update this dict after each baseline/run.py session.
 GRPO_SCORES = {
-    "easy":   {"score": 0.9083, "containment": 1.000, "hospital": 0.999, "efficiency": 0.857},
-    "medium": {"score": 0.7161, "containment": 0.423, "hospital": 0.976, "efficiency": 1.000},
-    "hard":   {"score": 0.6608, "containment": 0.513, "hospital": 0.971, "efficiency": 0.467},
+    "easy":   {"score": 0.8848, "containment": 1.000, "hospital": 0.996, "efficiency": 0.900},
+    "medium": {"score": 0.7539, "containment": 0.469, "hospital": 0.978, "efficiency": 0.987},
+    "hard":   {"score": 0.6311, "containment": 0.462, "hospital": 0.952, "efficiency": 0.533},
 }
 
 
