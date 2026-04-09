@@ -13,12 +13,7 @@ def get_client() -> OpenAI:
 
 def build_prompt(obs: CityObservation) -> str:
     num_districts = len(obs.districts)
-    # Infers data lag from district count because CityObservation does not expose
-    # data_lag_days directly. This works because hard (6 districts) is currently the
-    # only task with a data lag. If a new task is added with 6 districts and no lag,
-    # or a lag task with fewer districts, this will silently misbehave.
-    # Fix: expose data_lag_days in CityObservation and read it directly.
-    has_data_lag  = num_districts == 6
+    has_data_lag  = obs.data_lag_days > 0
 
     sorted_districts = sorted(
         obs.districts,

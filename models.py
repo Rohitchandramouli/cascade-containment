@@ -58,4 +58,5 @@ class CityObservation(Observation):
     available_resources:  int                       = Field(...,  description="Resource units remaining this turn")
     current_step:         int                       = Field(...,  description="Current step number")
     max_steps:            int                       = Field(...,  description="Total steps allowed this episode")
+    data_lag_days:        int                       = Field(0,    description="Reporting lag in days (0 = real-time, 3 = hard task)")
     message:              Optional[str]             = Field(None, description="Feedback string for debugging")

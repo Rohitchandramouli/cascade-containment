@@ -86,6 +86,7 @@ def build_observation(
         available_resources = state.available_resources,
         current_step        = step_count,
         max_steps           = state.max_steps,
+        data_lag_days       = state.data_lag_days,
         done                = done,
         reward              = reward,
         message             = message,

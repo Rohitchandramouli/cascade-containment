@@ -73,6 +73,9 @@ observation:
     reward:
       type: number
       nullable: true
+    data_lag_days:
+      type: integer
+      description: "Reporting lag in days (0 = real-time, 3 = hard task)"
     message:
       type: string
       nullable: true
