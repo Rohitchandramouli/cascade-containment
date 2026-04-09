@@ -203,7 +203,7 @@ Rollout 2: Memory-augmented prompt
   compute advantage = R2 - mean([R1])
   reinforce if advantage > -0.5
 
-... repeat for N rollouts (easy=2, medium=4, hard=4)
+... repeat for N rollouts (easy=2, medium=3, hard=3)
 Report best grader score across all rollouts
 ```
 
@@ -242,13 +242,14 @@ cascade-containment/
 ├── models.py                 # Typed data contracts: Action, Observation, State
 ├── client.py                 # OpenEnv client interface
 ├── openenv.yaml              # Environment manifest for OpenEnv registry
-├── Dockerfile                # Container definition
+│
 ├── server/
 │   ├── app.py                # FastAPI server + judge dashboard + /grade /info /demo /validate endpoints
 │   ├── environment.py        # Core RL loop (reset/step/state OpenEnv interface)
 │   ├── grader.py             # Deterministic trajectory scorer — no LLM calls
 │   ├── constants.py          # Single source of truth for all numeric configuration
 │   ├── utils.py              # Spread computation, observation builder, helper functions
+│   ├── Dockerfile            # Container definition
 │   └── tasks/
 │       ├── task_easy.py      # 2 districts, 10 steps, real-time data (D1 seeded)
 │       ├── task_medium.py    # 4 districts, 15 steps, forced triage
@@ -256,7 +257,7 @@ cascade-containment/
 │
 ├── baseline/
 │   ├── policy.py             # LLM policy with chain-of-thought prompting
-│   ├── evaluator.py          # GRPO episodic memory loop (easy=2, medium=4, hard=4 rollouts)
+│   ├── evaluator.py          # GRPO episodic memory loop (easy=2, medium=3, hard=3 rollouts)
 │   └── run.py                # CLI entry point
 │
 ├── scripts/

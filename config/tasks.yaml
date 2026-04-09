@@ -77,15 +77,15 @@ grader:
 benchmark:
   rollouts:
     easy:   2
-    medium: 4
-    hard:   4
+    medium: 3
+    hard:   3
   greedy_d0:
     easy:   {score: 0.428, breach_rate: 0.60}
     medium: {score: 0.427, breach_rate: 0.80}
     hard:   {score: 0.330, breach_rate: 1.00}
   llm_grpo:
     easy:   {score: 0.885, model: llama-3.1-8b-instant}
-    medium: {score: 0.754, model: llama-3.1-8b-instant}
-    hard:   {score: 0.631, model: llama-3.1-8b-instant}
-    average: 0.757
-    runtime_seconds: 1229
+    medium: {score: 0.766, model: llama-3.1-8b-instant}
+    hard:   {score: 0.688, model: llama-3.1-8b-instant}
+    average: 0.794
+    runtime_seconds: 1134

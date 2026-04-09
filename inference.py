@@ -22,8 +22,16 @@ BENCHMARK    = "cascade-containment"
 
 N_ROLLOUTS = {
     "easy":   2,
-    "medium": 4,
-    "hard":   4,
+    "medium": 3,
+    "hard":   3,
+}
+
+# If a rollout already hits this score, skip remaining rollouts for the task.
+# Keeps runtime predictable when judges evaluate with slower models.
+EARLY_STOP_THRESHOLD = {
+    "easy":   0.85,
+    "medium": 0.72,
+    "hard":   0.65,
 }
 
 
@@ -115,6 +123,7 @@ def run_rollout(
 
 def run_task(env, task_name: str, client: OpenAI) -> float:
     n_rollouts = N_ROLLOUTS[task_name]
+    threshold  = EARLY_STOP_THRESHOLD[task_name]
     memory     = EpisodicMemory(max_size=20)
     rollouts   = []
 
@@ -127,6 +136,9 @@ def run_task(env, task_name: str, client: OpenAI) -> float:
         completed_rewards = [r[0] for r in rollouts]
         advantage         = compute_advantage(total_reward, completed_rewards[:-1])
         update_memory(memory, trajectory, advantage)
+
+        if score >= threshold:
+            break
 
     return max(r[2] for r in rollouts)
 

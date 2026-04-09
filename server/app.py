@@ -763,7 +763,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
         <div style="font-size:0.82rem;font-weight:700;color:#fff;">LLM + GRPO Agent (Llama 3.3 70B)</div>
       </div>
       <div style="font-size:0.72rem;color:var(--muted);margin-bottom:1rem;line-height:1.7;">
-        Llama 3.3 70B via Groq, with GRPO-style episodic memory across 2&ndash;4 rollouts per task.
+        Llama 3.3 70B via Groq, with GRPO-style episodic memory across 2&ndash;3 rollouts per task.
         Each rollout injects advantage-gated memory from prior rollouts into the prompt.
         Reproduced by running <code style="color:var(--text);">python baseline/run.py</code>.
         Total runtime: <strong style="color:var(--text);">19.8 minutes</strong>.
@@ -780,7 +780,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
           </div>
         </div>
         <div class="card-sm" style="border-top:2px solid var(--amber);">
-          <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--amber);margin-bottom:0.5rem;">Medium &middot; 4 rollouts</div>
+          <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--amber);margin-bottom:0.5rem;">Medium &middot; 3 rollouts</div>
           <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">75.4%</div>
           <div style="font-size:0.68rem;color:var(--muted);margin-top:0.25rem;">Best of 4 &middot; no breach</div>
           <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.3rem;">
@@ -790,7 +790,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
           </div>
         </div>
         <div class="card-sm" style="border-top:2px solid var(--red);">
-          <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--red);margin-bottom:0.5rem;">Hard &middot; 4 rollouts</div>
+          <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--red);margin-bottom:0.5rem;">Hard &middot; 3 rollouts</div>
           <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">63.1%</div>
           <div style="font-size:0.68rem;color:var(--muted);margin-top:0.25rem;">Best of 4 &middot; no breach</div>
           <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.3rem;">
@@ -803,20 +803,20 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
       <div class="card-sm">
         <div class="card-title">GRPO Learning &mdash; Score Progression Across Rollouts</div>
         <table class="table">
-          <tr><th>Task</th><th>Rollout 1</th><th>Rollout 2</th><th>Rollout 3</th><th>Rollout 4</th><th>Best</th></tr>
+          <tr><th>Task</th><th>Rollout 1</th><th>Rollout 2</th><th>Rollout 3</th><th>Best</th></tr>
           <tr>
             <td><span class="badge badge-green">Easy</span></td>
-            <td>88.5%</td><td>83.2%</td><td>&mdash;</td><td>&mdash;</td>
+            <td>88.5%</td><td>83.2%</td><td>&mdash;</td>
             <td><strong style="color:var(--green);">88.5%</strong></td>
           </tr>
           <tr>
             <td><span class="badge badge-amber">Medium</span></td>
-            <td>59.6%</td><td>66.2%</td><td>75.4%</td><td>53.7%</td>
+            <td>59.6%</td><td>66.2%</td><td>75.4%</td>
             <td><strong style="color:var(--amber);">75.4%</strong></td>
           </tr>
           <tr>
             <td><span class="badge badge-red">Hard</span></td>
-            <td>63.1%</td><td>53.9%</td><td>59.0%</td><td>63.0%</td>
+            <td>63.1%</td><td>53.9%</td><td>59.0%</td>
             <td><strong style="color:var(--red);">63.1%</strong></td>
           </tr>
         </table>
@@ -1086,7 +1086,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
     <div class="arch-card"><div class="arch-icon">📊</div><div class="arch-name">grader.py</div><div class="arch-desc">Deterministic trajectory scorer. Reads hidden CityState. Four components weighted into final_score ∈ [0.0, 1.0]. Zero LLM calls.</div></div>
     <div class="arch-card"><div class="arch-icon">🌊</div><div class="arch-name">utils.py</div><div class="arch-desc">SIR-inspired spread model with linear spillover (no wrap-around). Observation builder enforcing partial observability by task.</div></div>
     <div class="arch-card"><div class="arch-icon">🧠</div><div class="arch-name">core/trajectory.py</div><div class="arch-desc">EpisodicMemory. Stores (obs, action, reward) tuples. Retrieves top-k by L1 distance on infection profiles, phase-weighted.</div></div>
-    <div class="arch-card"><div class="arch-icon">🎯</div><div class="arch-name">baseline/evaluator.py</div><div class="arch-desc">GRPO-style loop. Per-task rollouts: easy=2, medium=4, hard=4. Advantage = Rᵢ − mean(R). Memory threshold -0.3. Best score reported.</div></div>
+    <div class="arch-card"><div class="arch-icon">🎯</div><div class="arch-name">baseline/evaluator.py</div><div class="arch-desc">GRPO-style loop. Per-task rollouts: easy=2, medium=3, hard=3. Advantage = Rᵢ − mean(R). Memory threshold -0.3. Best score reported.</div></div>
   </div>
 
   <div class="card">

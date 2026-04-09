@@ -224,7 +224,7 @@ def print_app_table(greedy_results: dict):
         print(f"    {task.upper():<8} score={g['score']:.2f}  cont={g['containment']:.2f}  "
               f"hosp={g['hospital']:.2f}  eff={g['efficiency']:.2f}  breach={g['breach_rate']*100:.0f}%")
     print()
-    print("  LLM+GRPO (update GRPO_SCORES at the top of this file after each run):")
+    print("  LLM+GRPO (easy=2 rollouts, medium=3, hard=3 — update GRPO_SCORES after each run):")
     for task in ["easy", "medium", "hard"]:
         l = GRPO_SCORES[task]
         print(f"    {task.upper():<8} score={l['score']:.2f}  cont={l['containment']:.2f}  "
