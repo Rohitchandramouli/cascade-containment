@@ -9,8 +9,18 @@ class EpisodicMemory:
     Stores high-reward steps from past rollouts and retrieves similar
     past decisions to guide the next rollout via prompt injection.
 
-    Similarity is measured by L1 distance on infection profiles,
-    with a small bonus for matching the episode phase (early/mid/late).
+    Key design choice: actions are stored as RELATIVE ranks rather than
+    absolute district IDs. Rank 0 = highest-infected district at the time
+    of the action, rank 1 = second-highest, and so on.
+
+    This matters because each episode randomises spread rates and densities,
+    so "allocate D1" from rollout 1 may refer to a completely different
+    epidemiological situation in rollout 2. Storing rank instead means
+    memory encodes the strategy ("target the worst district") rather than
+    an accident of episode initialisation ("target district 1").
+
+    On retrieval, ranks are resolved back to actual current district IDs
+    so the injected prompt text is immediately actionable.
     """
 
     def __init__(self, max_size: int = 20):
@@ -24,17 +34,32 @@ class EpisodicMemory:
         phase = "early" if obs.current_step <= obs.max_steps // 3 else \
                 "mid"   if obs.current_step <= 2 * obs.max_steps // 3 else "late"
 
+        # Sort districts by infection rate descending to get current rankings
+        sorted_by_infection = sorted(
+            obs.districts,
+            key=lambda d: d.reported_infection_rate,
+            reverse=True
+        )
+        id_to_rank = {d.district_id: rank for rank, d in enumerate(sorted_by_infection)}
+
+        # Store rank rather than absolute ID
+        district_rank = id_to_rank.get(action.district_id, 0)
+
+        target_infection = next(
+            (d.reported_infection_rate for d in obs.districts if d.district_id == action.district_id),
+            0.0
+        )
+        highest_infection = sorted_by_infection[0].reported_infection_rate if sorted_by_infection else 0.0
+
         self.memories.append({
-            "infection_profile": [round(d.reported_infection_rate, 2) for d in obs.districts],
-            "resources":         obs.available_resources,
-            "phase":             phase,
-            "action_type":       action.action_type,
-            "district_id":       action.district_id,
-            "reward":            round(reward, 4),
-            "highest_district":  max(
-                                     range(len(obs.districts)),
-                                     key=lambda i: obs.districts[i].reported_infection_rate
-                                 ),
+            "infection_profile":  [round(d.reported_infection_rate, 2) for d in obs.districts],
+            "resources":          obs.available_resources,
+            "phase":              phase,
+            "action_type":        action.action_type,
+            "district_rank":      district_rank,       # 0 = highest infected
+            "target_infection":   round(target_infection, 2),
+            "highest_infection":  round(highest_infection, 2),
+            "reward":             round(reward, 4),
         })
 
         self.memories.sort(key=lambda m: m["reward"], reverse=True)
@@ -59,11 +84,27 @@ class EpisodicMemory:
         ranked = sorted(self.memories, key=score)
         top    = ranked[:top_k]
 
+        # Resolve stored ranks back to current district IDs for this episode
+        current_sorted = sorted(
+            obs.districts,
+            key=lambda d: d.reported_infection_rate,
+            reverse=True
+        )
+
         lines = ["Past decisions that earned positive reward (use as guidance):"]
         for m in top:
+            rank = m["district_rank"]
+            if rank < len(current_sorted):
+                resolved_id = current_sorted[rank].district_id
+                rank_label  = f"rank-{rank} district (currently D{resolved_id})"
+            else:
+                resolved_id = current_sorted[0].district_id if current_sorted else 0
+                rank_label  = f"rank-0 district (currently D{resolved_id})"
+
             lines.append(
-                f"  Phase={m.get('phase','?')} Profile={m['infection_profile']} resources={m['resources']}: "
-                f"'{m['action_type']}' D{m['district_id']} → reward {m['reward']:+.2f}"
+                f"  Phase={m.get('phase','?')} resources={m['resources']} "
+                f"highest={m['highest_infection']:.2f} target={m['target_infection']:.2f}: "
+                f"'{m['action_type']}' {rank_label} → reward {m['reward']:+.2f}"
             )
         return "\n".join(lines)
 
