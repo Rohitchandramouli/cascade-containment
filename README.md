@@ -214,9 +214,9 @@ Results from `baseline/run.py` (Llama 3.3 70B via Groq, runtime ~19.8 minutes):
 | Task | Greedy (D0) | LLM+GRPO | Lift |
 | --- | --- | --- | --- |
 | Easy | 42.8% (breach 60%) | **90.8%** | +48pp |
-| Medium | 42.7% (breach 80%) | **78.0%** | +35pp |
-| Hard | 33.0% (breach 100%) | **61.1%** | +28pp |
-| **Average** | **39.5%** | **75.9%** | **+36pp** |
+| Medium | 39.6% (breach 100%) | **78.0%** | +38pp |
+| Hard | 35.3% (breach 100%) | **61.1%** | +26pp |
+| **Average** | **39.2%** | **75.9%** | **+37pp** |
 
 The greedy baseline (always allocates to D0) scores 33–43% with 60–100% hospital breach rates — no trivial exploit path. LLM+GRPO reaches 66–91% with zero breaches, demonstrating that genuine triage reasoning is required and rewarded.
 

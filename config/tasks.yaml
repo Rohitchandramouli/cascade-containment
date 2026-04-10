@@ -81,8 +81,8 @@ benchmark:
     hard:   3
   greedy_d0:
     easy:   {score: 0.428, breach_rate: 0.60}
-    medium: {score: 0.427, breach_rate: 0.80}
-    hard:   {score: 0.330, breach_rate: 1.00}
+    medium: {score: 0.396, breach_rate: 1.00}
+    hard:   {score: 0.353, breach_rate: 1.00}
   llm_grpo:
     easy:   {score: 0.885, model: llama-3.1-8b-instant}
     medium: {score: 0.766, model: llama-3.1-8b-instant}

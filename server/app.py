@@ -569,7 +569,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
     <div class="hero-stats">
       <div class="hs-item"><div class="hs-val">3</div><div class="hs-label">Task levels</div></div>
       <div class="hs-item"><div class="hs-val">75.9%</div><div class="hs-label">LLM+GRPO avg</div></div>
-      <div class="hs-item"><div class="hs-val">+36pp</div><div class="hs-label">vs greedy</div></div>
+      <div class="hs-item"><div class="hs-val">+37pp</div><div class="hs-label">vs greedy</div></div>
     </div>
   </div>
 
@@ -729,21 +729,21 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
         </div>
         <div class="card-sm" style="border-top:2px solid var(--amber);">
           <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--amber);margin-bottom:0.5rem;">Medium</div>
-          <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">42.7%</div>
-          <div style="font-size:0.68rem;color:var(--muted);margin-top:0.25rem;">&sigma;=0.059 &middot; breach 80%</div>
+          <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">39.6%</div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-top:0.25rem;">&sigma;=0.026 &middot; breach 100%</div>
           <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.3rem;">
-            <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Containment</span><span>45%</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Hospital</span><span>59%</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Efficiency</span><span>8%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Containment</span><span>42%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Hospital</span><span>52%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Efficiency</span><span>9%</span></div>
           </div>
         </div>
         <div class="card-sm" style="border-top:2px solid var(--red);">
           <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--red);margin-bottom:0.5rem;">Hard</div>
-          <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">33.0%</div>
+          <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">35.3%</div>
           <div style="font-size:0.68rem;color:var(--muted);margin-top:0.25rem;">&sigma;=0.020 &middot; breach 100%</div>
           <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.3rem;">
-            <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Containment</span><span>30%</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Hospital</span><span>50%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Containment</span><span>35%</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Hospital</span><span>52%</span></div>
             <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Efficiency</span><span style="color:var(--red);">0%</span></div>
           </div>
         </div>
@@ -849,22 +849,22 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
           </tr>
           <tr>
             <td><span class="badge badge-amber">Medium</span></td>
-            <td style="color:var(--muted);">42.7%</td><td><strong>78.0%</strong></td>
-            <td class="pos">+35pp</td>
+            <td style="color:var(--muted);">39.6%</td><td><strong>78.0%</strong></td>
+            <td class="pos">+38pp</td>
             <td><span class="badge badge-green">Strong</span></td>
             <td><span class="badge badge-green">None &mdash; 8% eff, 80% breach</span></td>
           </tr>
           <tr>
             <td><span class="badge badge-red">Hard</span></td>
-            <td style="color:var(--muted);">33.0%</td><td><strong>61.1%</strong></td>
-            <td class="pos">+28pp</td>
+            <td style="color:var(--muted);">35.3%</td><td><strong>61.1%</strong></td>
+            <td class="pos">+26pp</td>
             <td><span class="badge badge-green">Strong</span></td>
             <td><span class="badge badge-green">None &mdash; 0% eff, 100% breach</span></td>
           </tr>
           <tr style="border-top:1px solid var(--border2);">
             <td><strong>Average</strong></td>
-            <td style="color:var(--muted);">39.5%</td><td><strong>75.9%</strong></td>
-            <td class="pos"><strong>+36pp</strong></td>
+            <td style="color:var(--muted);">39.2%</td><td><strong>75.9%</strong></td>
+            <td class="pos"><strong>+37pp</strong></td>
             <td><span class="badge badge-green">Strong</span></td>
             <td><span class="badge badge-green">No exploits found</span></td>
           </tr>
@@ -874,7 +874,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
         <div class="card-sm">
           <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Easy</div>
           <div style="display:flex;flex-direction:column;gap:0.45rem;">
-            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--muted);">Greedy (D0)</span><span>43%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:43%;background:var(--dim);"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--muted);">Greedy (D0)</span><span>40%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:40%;background:var(--dim);"></div></div></div>
             <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--green);">LLM+GRPO</span><span>89%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:89%;background:var(--green);"></div></div></div>
             <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--green);font-weight:700;">+46pp</span></div>
           </div>
@@ -882,22 +882,22 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
         <div class="card-sm">
           <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Medium</div>
           <div style="display:flex;flex-direction:column;gap:0.45rem;">
-            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--muted);">Greedy (D0)</span><span>43%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:43%;background:var(--dim);"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--muted);">Greedy (D0)</span><span>40%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:40%;background:var(--dim);"></div></div></div>
             <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--amber);">LLM+GRPO</span><span>75%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:75%;background:var(--amber);"></div></div></div>
-            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--amber);font-weight:700;">+35pp</span></div>
+            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--amber);font-weight:700;">+38pp</span></div>
           </div>
         </div>
         <div class="card-sm">
           <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Hard</div>
           <div style="display:flex;flex-direction:column;gap:0.45rem;">
-            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--muted);">Greedy (D0)</span><span>33%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:33%;background:var(--dim);"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--muted);">Greedy (D0)</span><span>35%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:35%;background:var(--dim);"></div></div></div>
             <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--red);">LLM+GRPO</span><span>63%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:63%;background:var(--red);"></div></div></div>
-            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--red);font-weight:700;">+28pp</span></div>
+            <div style="font-size:0.68rem;color:var(--red);font-weight:700;">+26pp</span></div>
           </div>
         </div>
       </div>
       <div style="padding:0.85rem 1.1rem;background:var(--green-dim);border:1px solid rgba(61,214,140,0.2);border-radius:8px;font-size:0.72rem;color:var(--text);line-height:1.8;">
-        &#10003; <strong>Variance check passed.</strong> Mean lift of <strong>+36pp</strong> across all tasks.
+        &#10003; <strong>Variance check passed.</strong> Mean lift of <strong>+37pp</strong> across all tasks.
         Greedy (D0) scores 33&ndash;43% with 60&ndash;100% hospital breach rates &mdash; confirming no trivial exploit path.
         LLM+GRPO reaches 66&ndash;91% with zero breaches &mdash; genuine triage reasoning is required and rewarded.
       </div>
