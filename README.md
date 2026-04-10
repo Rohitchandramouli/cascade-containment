@@ -209,7 +209,7 @@ Report best grader score across all rollouts
 
 ### Benchmark Scores
 
-Results from `baseline/run.py` (Llama 3.3 70B via Groq, runtime ~19.8 minutes):
+Results from `baseline/run.py` (Llama 3.1 8B Instant via Groq, runtime ~10 minutes):
 
 | Task | Greedy (D0) | LLM+GRPO | Lift |
 | --- | --- | --- | --- |
@@ -285,7 +285,7 @@ cascade-containment/
 | HF Space deploys | ✅ |
 | `inference.py` at root | ✅ |
 | `[START][STEP][END]` structured logs | ✅ |
-| Runtime < 20 minutes | ✅ ~19.8 minutes |
+| Runtime < 20 minutes | ✅ ~~10 minutes |
 | `API_BASE_URL`, `MODEL_NAME`, `HF_TOKEN` env vars | ✅ |
 | OpenAI client for all LLM calls | ✅ |
 | Grader scores in `[0.0, 1.0]` | ✅ |

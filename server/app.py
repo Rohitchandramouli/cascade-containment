@@ -760,13 +760,13 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
     <div>
       <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
         <div style="background:var(--blue-dim);border:1px solid rgba(74,158,255,0.25);border-radius:6px;padding:0.2rem 0.6rem;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--blue);">Eval 2 of 3</div>
-        <div style="font-size:0.82rem;font-weight:700;color:#fff;">LLM + GRPO Agent (Llama 3.3 70B)</div>
+        <div style="font-size:0.82rem;font-weight:700;color:#fff;">LLM + GRPO Agent (Llama 3.1 8B Instant)</div>
       </div>
       <div style="font-size:0.72rem;color:var(--muted);margin-bottom:1rem;line-height:1.7;">
-        Llama 3.3 70B via Groq, with GRPO-style episodic memory across 2&ndash;3 rollouts per task.
+        Llama 3.1 8B Instant via Groq, with GRPO-style episodic memory across 2&ndash;3 rollouts per task.
         Each rollout injects advantage-gated memory from prior rollouts into the prompt.
         Reproduced by running <code style="color:var(--text);">python baseline/run.py</code>.
-        Llama 3.3 70B via Groq, with GRPO-style episodic memory across 2&ndash;3 rollouts per task.
+        Llama 3.1 8B Instant via Groq, with GRPO-style episodic memory across 2&ndash;3 rollouts per task.
         Total runtime: <strong style="color:var(--text);">~10 minutes</strong>.
       </div>
       <div class="grid-3" style="margin-bottom:1rem;">
