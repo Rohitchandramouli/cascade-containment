@@ -72,7 +72,7 @@ export MODEL_NAME="meta-llama/Llama-3.1-8B-Instruct"
 export HF_TOKEN="hf_your_token_here"
 export ENV_BASE_URL="https://therubberduckdebuggers-cascade-containment.hf.space"
 
-# Full LLM+GRPO evaluation (~20 minutes, emits [START][STEP][END] logs)
+# Full LLM+GRPO evaluation (~10 minutes, emits [START][STEP][END] logs)
 python inference.py
 
 # Local validation + greedy benchmark
@@ -214,9 +214,9 @@ Results from `baseline/run.py` (Llama 3.3 70B via Groq, runtime ~19.8 minutes):
 | Task | Greedy (D0) | LLM+GRPO | Lift |
 | --- | --- | --- | --- |
 | Easy | 42.8% (breach 60%) | **90.8%** | +48pp |
-| Medium | 42.7% (breach 80%) | **71.6%** | +29pp |
-| Hard | 33.0% (breach 100%) | **66.1%** | +33pp |
-| **Average** | **39.5%** | **76.2%** | **+37pp** |
+| Medium | 42.7% (breach 80%) | **78.0%** | +35pp |
+| Hard | 33.0% (breach 100%) | **61.1%** | +28pp |
+| **Average** | **39.5%** | **75.9%** | **+36pp** |
 
 The greedy baseline (always allocates to D0) scores 33–43% with 60–100% hospital breach rates — no trivial exploit path. LLM+GRPO reaches 66–91% with zero breaches, demonstrating that genuine triage reasoning is required and rewarded.
 

@@ -525,7 +525,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
     <div class="brand-icon">🦠</div>
     <div>
       <div class="brand-name">Cascade Containment</div>
-      <div class="brand-sub">OpenEnv Benchmark &middot; Meta PyTorch Hackathon &times; SST 2026 &middot; LLM avg 75.7%</div>
+      <div class="brand-sub">OpenEnv Benchmark &middot; Meta PyTorch Hackathon &times; SST 2026 &middot; LLM avg 75.9%</div>
     </div>
   </div>
   <div class="header-right">
@@ -568,7 +568,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
     </div>
     <div class="hero-stats">
       <div class="hs-item"><div class="hs-val">3</div><div class="hs-label">Task levels</div></div>
-      <div class="hs-item"><div class="hs-val">75.7%</div><div class="hs-label">LLM+GRPO avg</div></div>
+      <div class="hs-item"><div class="hs-val">75.9%</div><div class="hs-label">LLM+GRPO avg</div></div>
       <div class="hs-item"><div class="hs-val">+36pp</div><div class="hs-label">vs greedy</div></div>
     </div>
   </div>
@@ -766,7 +766,8 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
         Llama 3.3 70B via Groq, with GRPO-style episodic memory across 2&ndash;3 rollouts per task.
         Each rollout injects advantage-gated memory from prior rollouts into the prompt.
         Reproduced by running <code style="color:var(--text);">python baseline/run.py</code>.
-        Total runtime: <strong style="color:var(--text);">19.8 minutes</strong>.
+        Llama 3.3 70B via Groq, with GRPO-style episodic memory across 2&ndash;3 rollouts per task.
+        Total runtime: <strong style="color:var(--text);">~10 minutes</strong>.
       </div>
       <div class="grid-3" style="margin-bottom:1rem;">
         <div class="card-sm" style="border-top:2px solid var(--green);">
@@ -781,7 +782,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
         </div>
         <div class="card-sm" style="border-top:2px solid var(--amber);">
           <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--amber);margin-bottom:0.5rem;">Medium &middot; 3 rollouts</div>
-          <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">75.4%</div>
+          <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">78.0%</div>
           <div style="font-size:0.68rem;color:var(--muted);margin-top:0.25rem;">Best of 4 &middot; no breach</div>
           <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.3rem;">
             <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Containment</span><span>42%</span></div>
@@ -791,7 +792,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
         </div>
         <div class="card-sm" style="border-top:2px solid var(--red);">
           <div style="font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--red);margin-bottom:0.5rem;">Hard &middot; 3 rollouts</div>
-          <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">63.1%</div>
+          <div style="font-family:var(--serif);font-size:2rem;font-weight:700;color:#fff;line-height:1;">61.1%</div>
           <div style="font-size:0.68rem;color:var(--muted);margin-top:0.25rem;">Best of 4 &middot; no breach</div>
           <div style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.3rem;">
             <div style="display:flex;justify-content:space-between;font-size:0.68rem;"><span style="color:var(--muted);">Containment</span><span>51%</span></div>
@@ -811,13 +812,13 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
           </tr>
           <tr>
             <td><span class="badge badge-amber">Medium</span></td>
-            <td>59.6%</td><td>66.2%</td><td>75.4%</td>
-            <td><strong style="color:var(--amber);">75.4%</strong></td>
+            <td>56.3%</td><td>78.0%</td><td>64.0%</td>
+            <td><strong style="color:var(--amber);">78.0%</strong></td>
           </tr>
           <tr>
             <td><span class="badge badge-red">Hard</span></td>
-            <td>63.1%</td><td>53.9%</td><td>59.0%</td>
-            <td><strong style="color:var(--red);">63.1%</strong></td>
+            <td>61.1%</td><td>57.7%</td><td>60.3%</td>
+            <td><strong style="color:var(--red);">61.1%</strong></td>
           </tr>
         </table>
       </div>
@@ -848,21 +849,21 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
           </tr>
           <tr>
             <td><span class="badge badge-amber">Medium</span></td>
-            <td style="color:var(--muted);">42.7%</td><td><strong>75.4%</strong></td>
-            <td class="pos">+33pp</td>
+            <td style="color:var(--muted);">42.7%</td><td><strong>78.0%</strong></td>
+            <td class="pos">+35pp</td>
             <td><span class="badge badge-green">Strong</span></td>
             <td><span class="badge badge-green">None &mdash; 8% eff, 80% breach</span></td>
           </tr>
           <tr>
             <td><span class="badge badge-red">Hard</span></td>
-            <td style="color:var(--muted);">33.0%</td><td><strong>63.1%</strong></td>
-            <td class="pos">+33pp</td>
+            <td style="color:var(--muted);">33.0%</td><td><strong>61.1%</strong></td>
+            <td class="pos">+28pp</td>
             <td><span class="badge badge-green">Strong</span></td>
             <td><span class="badge badge-green">None &mdash; 0% eff, 100% breach</span></td>
           </tr>
           <tr style="border-top:1px solid var(--border2);">
             <td><strong>Average</strong></td>
-            <td style="color:var(--muted);">39.5%</td><td><strong>75.7%</strong></td>
+            <td style="color:var(--muted);">39.5%</td><td><strong>75.9%</strong></td>
             <td class="pos"><strong>+36pp</strong></td>
             <td><span class="badge badge-green">Strong</span></td>
             <td><span class="badge badge-green">No exploits found</span></td>
@@ -883,7 +884,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
           <div style="display:flex;flex-direction:column;gap:0.45rem;">
             <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--muted);">Greedy (D0)</span><span>43%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:43%;background:var(--dim);"></div></div></div>
             <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--amber);">LLM+GRPO</span><span>75%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:75%;background:var(--amber);"></div></div></div>
-            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--amber);font-weight:700;">+33pp</span></div>
+            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--amber);font-weight:700;">+35pp</span></div>
           </div>
         </div>
         <div class="card-sm">
@@ -891,7 +892,7 @@ body{font-family:var(--mono);background:var(--bg);color:var(--text);min-height:1
           <div style="display:flex;flex-direction:column;gap:0.45rem;">
             <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--muted);">Greedy (D0)</span><span>33%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:33%;background:var(--dim);"></div></div></div>
             <div><div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:0.2rem;"><span style="color:var(--red);">LLM+GRPO</span><span>63%</span></div><div class="bar-track" style="height:8px;"><div class="bar-fill" style="width:63%;background:var(--red);"></div></div></div>
-            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--red);font-weight:700;">+30pp</span></div>
+            <div style="font-size:0.68rem;color:var(--muted);">Lift: <span style="color:var(--red);font-weight:700;">+28pp</span></div>
           </div>
         </div>
       </div>

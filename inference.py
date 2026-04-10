@@ -73,6 +73,8 @@ def run_rollout(
     rewards      = []
 
     log_start(task=f"{task_name}-r{rollout_idx}", env=BENCHMARK, model=MODEL_NAME)
+    seen_steps: set = set()  # deduplicate WebSocket replay artefacts
+    end_logged: bool = False
 
     try:
         while not done:
@@ -85,7 +87,9 @@ def run_rollout(
                 result = env.step(action)
             except Exception as e:
                 log_step(step=step + 1, action=action_str, reward=0.0, done=True, error=str(e)[:80])
-                log_end(success=False, steps=step, score=0.0, rewards=rewards)
+                if not end_logged:
+                    end_logged = True
+                    log_end(success=False, steps=step, score=0.0, rewards=rewards)
                 return total_reward, step, trajectory, 0.0
 
             next_obs      = result.observation
@@ -96,7 +100,11 @@ def run_rollout(
 
             rewards.append(reward)
             trajectory.append({"obs": obs, "action": action, "reward": reward})
-            log_step(step=step, action=action_str, reward=reward, done=done, error=None)
+
+            # Only log each step number once — WebSocket can replay buffered responses
+            if step not in seen_steps:
+                seen_steps.add(step)
+                log_step(step=step, action=action_str, reward=reward, done=done, error=None)
 
             obs = next_obs
             if done:
@@ -114,10 +122,14 @@ def run_rollout(
         success = score >= 0.40
 
     except Exception:
-        log_end(success=False, steps=step, score=0.0, rewards=rewards)
+        if not end_logged:
+            end_logged = True
+            log_end(success=False, steps=step, score=0.0, rewards=rewards)
         return total_reward, step, trajectory, 0.0
 
-    log_end(success=success, steps=step, score=score, rewards=rewards)
+    if not end_logged:
+        end_logged = True
+        log_end(success=success, steps=step, score=score, rewards=rewards)
     return total_reward, step, trajectory, score
 
 
