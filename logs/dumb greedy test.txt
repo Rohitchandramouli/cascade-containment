@@ -1,5 +1,5 @@
-  CASCADE CONTAINMENT — LOCAL VALIDATION
-  2026-04-07 23:50:10
+ CASCADE CONTAINMENT — LOCAL VALIDATION
+  2026-04-10 20:05:15
 
 ════════════════════════════════════════════════════════
   PHASE 1 — SPEC COMPLIANCE CHECKS
@@ -9,9 +9,9 @@
   ✓ Reset Easy                     2 districts, 10 steps
   ✓ Reset Medium                   4 districts, 15 steps
   ✓ Reset Hard                     6 districts, 15 steps
-  ✓ Step Works                     reward=-0.0599, done=False
-  ✓ State Property                 episode_id=c94b64a9, step_count=0
-  ✓ Grader Range                   final_score=0.5573
+  ✓ Step Works                     reward=-0.1574, done=False
+  ✓ State Property                 episode_id=348aec86, step_count=0
+  ✓ Grader Range                   final_score=0.5469
   ✓ Invalid Action                 Gracefully defaulted: Invalid action_type 'invalid'. Defaulted to alloca
   ✓ Difficulty Progression         easy=2d, medium=4d, hard=6d
   ✓ Grader Deterministic           Scoring logic is pure — no internal randomness
@@ -26,27 +26,27 @@
 
   Task: EASY
 ────────────────────────────────────────────
-    Score:       0.4276  (σ=0.0721, range [0.3602–0.5163])
+    Score:       0.4275  (σ=0.0810, range [0.3579–0.5318])
     Containment: 0.5000
-    Hospital:    0.6079
+    Hospital:    0.6166
     Efficiency:  0.0000
     Breach rate: 60%   (0.0s)
 
   Task: MEDIUM
 ────────────────────────────────────────────
-    Score:       0.4271  (σ=0.0586, range [0.3648–0.5245])
-    Containment: 0.4502
-    Hospital:    0.5933
-    Efficiency:  0.0783
-    Breach rate: 80%   (0.0s)
+    Score:       0.3959  (σ=0.0256, range [0.3547–0.4275])
+    Containment: 0.4199
+    Hospital:    0.5204
+    Efficiency:  0.0873
+    Breach rate: 100%   (0.0s)
 
   Task: HARD
 ────────────────────────────────────────────
-    Score:       0.3299  (σ=0.0195, range [0.3037–0.3626])
-    Containment: 0.2959
-    Hospital:    0.5033
+    Score:       0.3533  (σ=0.0184, range [0.3354–0.3841])
+    Containment: 0.3494
+    Hospital:    0.5196
     Efficiency:  0.0000
-    Breach rate: 100%   (0.1s)
+    Breach rate: 100%   (0.0s)
 
 ════════════════════════════════════════════════════════
   PHASE 2 — SCORE VARIANCE CHECK
@@ -54,34 +54,34 @@
 
   Task        Greedy (D0)   LLM+GRPO   Δ (lift)     Signal
 ────────────────────────────────────────────────────────
-  easy             0.4276     0.9083    +0.4807   Strong ✓
-  medium           0.4271     0.7161    +0.2890   Strong ✓
-  hard             0.3299     0.6608    +0.3309   Strong ✓
+  easy             0.4275     0.8848    +0.4573   Strong ✓
+  medium           0.3959     0.7798    +0.3839   Strong ✓
+  hard             0.3533     0.6110    +0.2577   Strong ✓
 ────────────────────────────────────────────────────────
-  Average          0.3949     0.7617    +0.3669
+  Average          0.3922     0.7585    +0.3663
 
   Interpretation:
-    Mean lift = +0.3669  (Strong — environment meaningfully discriminates agent quality ✓)
+    Mean lift = +0.3663  (Strong — environment meaningfully discriminates agent quality ✓)
     Exploit check: ✓ No task trivially solvable by fixed-target allocation
 
   Run-to-run variance (reproducibility across 5 runs):
-    easy     σ=0.0721  min=0.3602  max=0.5163
-    medium   σ=0.0586  min=0.3648  max=0.5245
-    hard     σ=0.0195  min=0.3037  max=0.3626
+    easy     σ=0.0810  min=0.3579  max=0.5318
+    medium   σ=0.0256  min=0.3547  max=0.4275
+    hard     σ=0.0184  min=0.3354  max=0.3841
 
 ════════════════════════════════════════════════════════
   APP.PY BENCHMARK TABLE — paste these into Phase 2 tab after each run
 ════════════════════════════════════════════════════════
 
   Greedy baseline (always D0):
-    EASY     score=0.43  cont=0.50  hosp=0.61  eff=0.00  breach=60%
-    MEDIUM   score=0.43  cont=0.45  hosp=0.59  eff=0.08  breach=80%
-    HARD     score=0.33  cont=0.30  hosp=0.50  eff=0.00  breach=100%
+    EASY     score=0.43  cont=0.50  hosp=0.62  eff=0.00  breach=60%
+    MEDIUM   score=0.40  cont=0.42  hosp=0.52  eff=0.09  breach=100%
+    HARD     score=0.35  cont=0.35  hosp=0.52  eff=0.00  breach=100%
 
-  LLM+GRPO (update GRPO_SCORES dict above after each baseline/run.py session):
-    EASY     score=0.91  cont=1.00  hosp=1.00  eff=0.86
-    MEDIUM   score=0.72  cont=0.42  hosp=0.98  eff=1.00
-    HARD     score=0.66  cont=0.51  hosp=0.97  eff=0.47
+  LLM+GRPO (easy=2 rollouts, medium=3, hard=3 — update GRPO_SCORES after each run):
+    EASY     score=0.88  cont=1.00  hosp=1.00  eff=0.90
+    MEDIUM   score=0.78  cont=0.53  hosp=0.97  eff=0.96
+    HARD     score=0.61  cont=0.42  hosp=0.94  eff=0.52
 
 ════════════════════════════════════════════════════════
   MECHANIC CHECKS
